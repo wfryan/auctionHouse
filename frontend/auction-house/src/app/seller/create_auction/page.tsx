@@ -1,10 +1,17 @@
 'use client';
 import React, { useState, ChangeEvent } from 'react';
 
+import axios from "axios";
+const instance = axios.create({
+  baseURL: "https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse"
+})
+
 const CreateAuctionForm = () => {
   //State Declaration for Form Data
   const [formData, setFormData] = useState({
+    username: 'test',
     itemName: '',
+    itemDescription: '',
     startingPrice: '',
     startTime: '',
     endTime: '',
@@ -70,6 +77,25 @@ const CreateAuctionForm = () => {
       alert('Please fix the errors before submitting');
       return;
     }
+
+    const keyValueList = [];
+
+
+    let functionInput = JSON.stringify(formData);
+
+    console.log(functionInput);
+    instance.post('/auction/createAuction', functionInput).then(function (response) {
+      let status = response.data.statusCode
+      console.log(response)
+
+      if (status == 200) {
+        alert(response.data)
+        console.log(response.data)
+      }
+    })
+      .catch(function (error) {
+        console.log(error)
+      })
     console.log('Form submitted:', formData);
     alert('Auction created successfully!');
   };
@@ -102,7 +128,7 @@ const CreateAuctionForm = () => {
               />
             </div>
 
-            {/* Starting Price Field - Now with better error handling spacing */}
+            {/* Starting Price Field*/}
             <div className="flex flex-col">
               <label htmlFor="startingPrice" className="block text-sm font-medium text-white-700 mb-2">
                 Starting Price (Whole Numbers Only)
@@ -112,7 +138,7 @@ const CreateAuctionForm = () => {
                   type="text"
                   id="startingPrice"
                   name="startingPrice"
-                  required
+
                   className={`w-full p-2 sm:p-3 border-2 ${priceError ? 'border-red-500' : 'border-gray-300'} rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-black`}
                   value={formatPrice(formData.startingPrice)}
                   onChange={handleInputChange}
@@ -138,7 +164,6 @@ const CreateAuctionForm = () => {
                   type="datetime-local"
                   id="startTime"
                   name="startTime"
-                  required
                   className="w-full p-2 sm:p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-black"
                   value={formData.startTime}
                   onChange={handleInputChange}
@@ -154,7 +179,6 @@ const CreateAuctionForm = () => {
                   type="datetime-local"
                   id="endTime"
                   name="endTime"
-                  required
                   className="w-full p-2 sm:p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-black"
                   value={formData.endTime}
                   onChange={handleInputChange}
@@ -172,7 +196,6 @@ const CreateAuctionForm = () => {
                 id="image"
                 name="image"
                 accept="image/*"
-                required
                 className="w-full p-2 sm:p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-black"
                 onChange={handleImageChange}
               />
