@@ -22,7 +22,7 @@ const CreateAuctionForm = () => {
   const [priceError, setPriceError] = useState<string>('');
 
   //Input Handler for Price
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     if (name === 'startingPrice') {
       const rawValue = value.replace(/[$\s]/g, '');
@@ -77,6 +77,7 @@ const CreateAuctionForm = () => {
       alert('Please fix the errors before submitting');
       return;
     }
+
 
     const keyValueList = [];
 
@@ -184,6 +185,21 @@ const CreateAuctionForm = () => {
                   onChange={handleInputChange}
                 />
               </div>
+            </div>
+
+            {/* Extra Info */}
+            <div className="md:col-span-2">
+              <label htmlFor="image" className="block text-sm font-medium text-white-700 mb-2">
+                Extra Information
+              </label>
+              <textarea
+                id="itemDescription"
+                name="itemDescription"
+                className="w-full p-2 sm:p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-black resize-none"
+                value={formData.itemDescription}
+                onChange={handleInputChange}
+                rows={4}
+              />
             </div>
 
             {/* Image Upload Field */}
