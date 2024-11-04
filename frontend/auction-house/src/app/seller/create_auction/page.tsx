@@ -9,7 +9,6 @@ const instance = axios.create({
 const CreateAuctionForm = () => {
   //State Declaration for Form Data
   const [formData, setFormData] = useState({
-    username: 'test',
     itemName: '',
     itemDescription: '',
     startingPrice: '',
@@ -18,11 +17,17 @@ const CreateAuctionForm = () => {
     image: null as File | null
   });
 
+  const username = 'test'
+
+
+
+
   const [imagePreview, setImagePreview] = useState<string>('');
   const [priceError, setPriceError] = useState<string>('');
 
   //Input Handler for Price
   const handleInputChange = (e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>) => {
+    console.log(formData.startTime)
     const { name, value } = e.target;
     if (name === 'startingPrice') {
       const rawValue = value.replace(/[$\s]/g, '');
@@ -71,6 +76,27 @@ const CreateAuctionForm = () => {
     }
   };
 
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        if (reader.result) {
+          const base64Data = (reader.result as string).split(',')[1]; // Resolve with base64 data without the prefix
+          resolve(base64Data);
+        } else {
+          reject(new Error('File reading result is empty'));
+        }
+      };
+
+      reader.onerror = () => {
+        reject(new Error('File reading failed'));
+      };
+
+      reader.readAsDataURL(file); // Start reading the file
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (priceError) {
@@ -79,26 +105,41 @@ const CreateAuctionForm = () => {
     }
 
 
-    const keyValueList = [];
+    let base64data = null;
+    if (formData.image != null) {
+      base64data = await fileToBase64(formData.image);
+    }
 
+    let functionInput = JSON.stringify({
+      username: username,
+      itemName: formData.itemName,
+      startingPrice: formData.startingPrice,
+      itemDescription: formData.itemDescription,
+      startTime: formData.startTime,
+      endTime: formData.endTime,
+      image: base64data
+    });
 
-    let functionInput = JSON.stringify(formData);
+    try {
+      const response = await instance.post('/auction/createAuction', functionInput);
+      let status = response.data.statusCode;
+      console.log(response);
 
-    console.log(functionInput);
-    instance.post('/auction/createAuction', functionInput).then(function (response) {
-      let status = response.data.statusCode
-      console.log(response)
-
-      if (status == 200) {
-        alert(response.data)
-        console.log(response.data)
+      if (status === 200) {
+        //alert(response.data);
+        console.log(response.data);
+        // Redirect only after a successful response
+        window.location.href = '/seller';
+        alert("Auction created successfully!");
+      } else {
+        // Handle any other status codes appropriately
+        alert('Error: ' + response.data.body); // Adjust based on your response structure
       }
-    })
-      .catch(function (error) {
-        console.log(error)
-      })
-    console.log('Form submitted:', formData);
-    alert('Auction created successfully!');
+    } catch (error) {
+      console.log(error);
+      alert('There was an error submitting the form. Please try again.');
+    }
+    //window.location.href = '/seller';
   };
 
   return (
