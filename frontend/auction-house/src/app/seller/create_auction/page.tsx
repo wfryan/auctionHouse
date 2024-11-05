@@ -1,21 +1,33 @@
 'use client';
 import React, { useState, ChangeEvent } from 'react';
 
+import axios from "axios";
+const instance = axios.create({
+  baseURL: "https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse"
+})
+
 const CreateAuctionForm = () => {
   //State Declaration for Form Data
   const [formData, setFormData] = useState({
     itemName: '',
+    itemDescription: '',
     startingPrice: '',
     startTime: '',
     endTime: '',
     image: null as File | null
   });
 
+  const username = 'test'
+
+
+
+
   const [imagePreview, setImagePreview] = useState<string>('');
   const [priceError, setPriceError] = useState<string>('');
 
   //Input Handler for Price
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>) => {
+    console.log(formData.startTime)
     const { name, value } = e.target;
     if (name === 'startingPrice') {
       const rawValue = value.replace(/[$\s]/g, '');
@@ -64,14 +76,70 @@ const CreateAuctionForm = () => {
     }
   };
 
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        if (reader.result) {
+          const base64Data = (reader.result as string).split(',')[1]; // Resolve with base64 data without the prefix
+          resolve(base64Data);
+        } else {
+          reject(new Error('File reading result is empty'));
+        }
+      };
+
+      reader.onerror = () => {
+        reject(new Error('File reading failed'));
+      };
+
+      reader.readAsDataURL(file); // Start reading the file
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (priceError) {
       alert('Please fix the errors before submitting');
       return;
     }
-    console.log('Form submitted:', formData);
-    alert('Auction created successfully!');
+
+
+    let base64data = null;
+    if (formData.image != null) {
+      base64data = await fileToBase64(formData.image);
+    }
+
+    let functionInput = JSON.stringify({
+      username: username,
+      itemName: formData.itemName,
+      startingPrice: formData.startingPrice,
+      itemDescription: formData.itemDescription,
+      startTime: formData.startTime,
+      endTime: formData.endTime,
+      image: base64data
+    });
+
+    try {
+      const response = await instance.post('/auction/createAuction', functionInput);
+      let status = response.data.statusCode;
+      console.log(response);
+
+      if (status === 200) {
+        //alert(response.data);
+        console.log(response.data);
+        // Redirect only after a successful response
+        window.location.href = '/seller';
+        alert("Auction created successfully!");
+      } else {
+        // Handle any other status codes appropriately
+        alert('Error: ' + response.data.body); // Adjust based on your response structure
+      }
+    } catch (error) {
+      console.log(error);
+      alert('There was an error submitting the form. Please try again.');
+    }
+    //window.location.href = '/seller';
   };
 
   return (
@@ -102,7 +170,7 @@ const CreateAuctionForm = () => {
               />
             </div>
 
-            {/* Starting Price Field - Now with better error handling spacing */}
+            {/* Starting Price Field*/}
             <div className="flex flex-col">
               <label htmlFor="startingPrice" className="block text-sm font-medium text-white-700 mb-2">
                 Starting Price (Whole Numbers Only)
@@ -112,7 +180,7 @@ const CreateAuctionForm = () => {
                   type="text"
                   id="startingPrice"
                   name="startingPrice"
-                  required
+
                   className={`w-full p-2 sm:p-3 border-2 ${priceError ? 'border-red-500' : 'border-gray-300'} rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-black`}
                   value={formatPrice(formData.startingPrice)}
                   onChange={handleInputChange}
@@ -138,7 +206,6 @@ const CreateAuctionForm = () => {
                   type="datetime-local"
                   id="startTime"
                   name="startTime"
-                  required
                   className="w-full p-2 sm:p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-black"
                   value={formData.startTime}
                   onChange={handleInputChange}
@@ -154,12 +221,26 @@ const CreateAuctionForm = () => {
                   type="datetime-local"
                   id="endTime"
                   name="endTime"
-                  required
                   className="w-full p-2 sm:p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-black"
                   value={formData.endTime}
                   onChange={handleInputChange}
                 />
               </div>
+            </div>
+
+            {/* Extra Info */}
+            <div className="md:col-span-2">
+              <label htmlFor="image" className="block text-sm font-medium text-white-700 mb-2">
+                Extra Information
+              </label>
+              <textarea
+                id="itemDescription"
+                name="itemDescription"
+                className="w-full p-2 sm:p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-black resize-none"
+                value={formData.itemDescription}
+                onChange={handleInputChange}
+                rows={4}
+              />
             </div>
 
             {/* Image Upload Field */}
@@ -172,7 +253,6 @@ const CreateAuctionForm = () => {
                 id="image"
                 name="image"
                 accept="image/*"
-                required
                 className="w-full p-2 sm:p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-black"
                 onChange={handleImageChange}
               />
