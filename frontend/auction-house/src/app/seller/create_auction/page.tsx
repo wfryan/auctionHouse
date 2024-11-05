@@ -130,7 +130,6 @@ const CreateAuctionForm = () => {
         console.log(response.data);
         // Redirect only after a successful response
         window.location.href = '/seller';
-        alert("Auction created successfully!");
       } else {
         // Handle any other status codes appropriately
         alert('Error: ' + response.data.body); // Adjust based on your response structure

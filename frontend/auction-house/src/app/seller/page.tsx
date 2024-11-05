@@ -1,5 +1,9 @@
 'use client';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from "axios";
+const instance = axios.create({
+  baseURL: "https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse"
+})
 
 // Update interface to include isInactive prop
 interface AuctionTableProps {
@@ -8,16 +12,21 @@ interface AuctionTableProps {
   isInactive: boolean;
 }
 
+const user = 'test'; //temporary hardcoded user
+
 const AuctionDashboard = () => {
   // Dummy data for different auction categories
-  const auctionData: Record<string, string[]> = {
-    inactive: ["Vintage Watch Auction", "Antique Furniture Sale"],
-    active: ["Electronics Clearance", "Collectible Cards Bundle"],
-    failed: ["Holiday Decorations Lot"],
-    completed: ["Sports Memorabilia", "Rare Books Collection"],
-    archived: ["Summer Fashion Items", "Garden Tools Set"],
-    frozen: ["Jewelry Collection"]
-  };
+
+  const [auctionData, setAuctionData] = useState<Record<string, string[]>>({
+    unlisted: [],
+    active: [],
+    bought: [],
+    failed: [],
+    completed: [],
+    archived: [],
+    frozen: []
+  });
+
 
   //Handler for routing the user to the profile page
   const handleProfileClick = () => {
@@ -28,6 +37,45 @@ const AuctionDashboard = () => {
   const handleCreateAuction = () => {
     window.location.href = '/seller/create_auction';
   };
+
+  const getAuctionInfo = async () => {
+    let functionInput = JSON.stringify({
+      username: user
+    });
+
+    try {
+      const response = await instance.post('/auction/reviewAuctions', functionInput);
+      let status = response.data.statusCode;
+      console.log(response);
+
+      if (status === 200) {
+        let auctionData = response.data.body;
+        console.log(response.data.body);
+
+        const processedData: Record<string, string[]> = {};
+
+        Object.keys(auctionData).forEach(key => {
+          processedData[key] = auctionData[key].map((item: { item_name: string; }) => item.item_name);
+        });
+        console.log("got here")
+        setAuctionData(processedData);
+        console.log("got here?")
+
+
+
+      } else {
+        // Handle any other status codes appropriately
+        alert('Error: ' + response.data.body); // Adjust based on your response structure
+      }
+    } catch (error) {
+      console.log(error);
+      alert('There was an error submitting the form. Please try again.');
+    }
+  }
+
+  useEffect(() => {
+    getAuctionInfo();
+  }, []);
 
   // Component for individual auction table
   const AuctionTable: React.FC<AuctionTableProps> = ({ title, items, isInactive }) => (
@@ -64,13 +112,13 @@ const AuctionDashboard = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl md:text-3xl font-bold">Auction Dashboard</h1>
         <div className="flex space-x-4">
-          <button 
+          <button
             onClick={handleProfileClick}
             className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black"
           >
             Profile
           </button>
-          <button 
+          <button
             onClick={handleCreateAuction}
             className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black"
           >
@@ -80,10 +128,10 @@ const AuctionDashboard = () => {
       </div>
 
       <div className="space-y-6">
-        <AuctionTable title="INACTIVE" items={auctionData.inactive} isInactive={true} />
+        <AuctionTable title="UNLISTED" items={auctionData.unlisted} isInactive={true} />
         <AuctionTable title="ACTIVE" items={auctionData.active} isInactive={false} />
+        <AuctionTable title="BOUGHT" items={auctionData.bought} isInactive={false} />
         <AuctionTable title="FAILED" items={auctionData.failed} isInactive={false} />
-        <AuctionTable title="COMPLETED" items={auctionData.completed} isInactive={false} />
         <AuctionTable title="ARCHIVED" items={auctionData.archived} isInactive={false} />
         <AuctionTable title="FROZEN" items={auctionData.frozen} isInactive={false} />
       </div>
