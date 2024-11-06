@@ -30,12 +30,12 @@ const AuctionDashboard = () => {
 
   //Handler for routing the user to the profile page
   const handleProfileClick = () => {
-    window.location.href = '/seller/seller_profile';
+    window.location.href = '/pages/seller_profile';
   };
 
   //Handler for routing the user to the profile page
   const handleCreateAuction = () => {
-    window.location.href = '/seller/create_auction';
+    window.location.href = '/pages/create_auction';
   };
 
   const getAuctionInfo = async () => {

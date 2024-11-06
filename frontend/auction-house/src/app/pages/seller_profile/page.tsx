@@ -9,24 +9,41 @@ const SellerProfile = () => {
     balance: "$1,234.56"
   };
 
+
+  // Function to go back to the previous page
+  const handleBackButton = () => {
+    window.location.href = '/pages/auction_dashboard';
+  };
+
   return (
     <div className="p-4 md:p-5 font-sans max-w-7xl mx-auto">
-      <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-5">
-        Seller Profile Page
-      </h1>
+      <div className="mb-6">
+        {/* Back Button */}
+
+
+        <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-5">
+          Seller Profile Page
+        </h1>
+      </div>
 
       <div className="border border-gray-300 rounded-lg p-4 md:p-5 bg-white">
+        <button
+          onClick={handleBackButton}
+          className="px-4 py-2 text-sm text-black border-2 border-black rounded-md mb-4 hover:bg-gray-100"
+        >
+          Back
+        </button>
         <div className="flex flex-col md:flex-row md:justify-between gap-6 md:gap-8">
           {/* Left side - User Information */}
           <div className="w-full md:w-3/5 space-y-3">
             <div className="bg-gray-100 p-3 rounded-md text-black">
               {userData.username}
             </div>
-            
+
             <div className="bg-gray-100 p-3 rounded-md min-h-16 text-black">
               {userData.description}
             </div>
-            
+
             <div className="bg-gray-100 p-3 rounded-md text-black">
               {userData.balance}
             </div>
