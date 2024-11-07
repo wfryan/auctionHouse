@@ -5,10 +5,20 @@ const instance = axios.create({
   baseURL: "https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse"
 })
 
+class Auction{
+  auction_id: number
+  item_name: string
+
+  constructor(aid:number, name:string){
+    this.auction_id=aid;
+    this.item_name=name;
+  }
+}
+
 // Update interface to include isInactive prop
 interface AuctionTableProps {
   title: string;
-  items: string[];
+  items: Auction[];
   isInactive: boolean;
 }
 
@@ -17,7 +27,7 @@ const user = 'test'; //temporary hardcoded user
 const AuctionDashboard = () => {
   // Dummy data for different auction categories
 
-  const [auctionData, setAuctionData] = useState<Record<string, string[]>>({
+  const [auctionData, setAuctionData] = useState<Record<string, Auction[]>>({
     unlisted: [],
     active: [],
     bought: [],
@@ -38,6 +48,28 @@ const AuctionDashboard = () => {
     window.location.href = '/pages/create_auction';
   };
 
+  const publishAuction = async (auction_id: number)=>{
+    let payload = JSON.stringify({
+      auctionId:auction_id
+    });
+
+    console.log(auction_id)
+     try {
+      const response = await instance.post('/auction/publish', payload);
+      let status = response.data.statusCode;
+
+      if(status === 200){
+        getAuctionInfo();
+      }
+      console.log(response)
+    }
+    catch(error){
+      console.log(error)
+      alert("Error publishing auction")
+    } 
+
+  };
+
   const getAuctionInfo = async () => {
     let functionInput = JSON.stringify({
       username: user
@@ -52,11 +84,14 @@ const AuctionDashboard = () => {
         let auctionData = response.data.body;
         console.log(response.data.body);
 
-        const processedData: Record<string, string[]> = {};
+        const processedData: Record<string, Auction[]> = {};
 
         Object.keys(auctionData).forEach(key => {
-          processedData[key] = auctionData[key].map((item: { item_name: string; }) => item.item_name);
-        });
+          processedData[key] = auctionData[key].map((item: { auction_id: number, item_name: string }) => ({
+            auction_id: item.auction_id,
+            item_name: item.item_name
+          }));        });
+        console.log(processedData)
         console.log("got here")
         setAuctionData(processedData);
         console.log("got here?")
@@ -87,9 +122,12 @@ const AuctionDashboard = () => {
         {items.length > 0 ? (
           items.map((item, index) => (
             <div key={index} className="p-4 border-b last:border-b-0 flex justify-between items-center">
-              <span>{item}</span>
+              <span>{item.item_name}</span>
               {isInactive && (
                 <div className="space-x-2">
+                  <button onClick={()=>publishAuction(item.auction_id)}className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300">
+                    Publish
+                  </button>
                   <button className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300">
                     Edit
                   </button>
