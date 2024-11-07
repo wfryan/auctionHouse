@@ -43,10 +43,11 @@ const LoginPage = () => {
                 // Redirect only after a successful response
                 //window.location.href = '/seller';
                 let accountType = response.data.body.type;
+                const appendedUrl = '?username=' + username;
                 if (accountType == "buyer") {
-
+                    window.location.href = '/pages/search' + appendedUrl;
                 } else if (accountType == "seller") {
-
+                    window.location.href = '/pages/auction_dashboard' + appendedUrl;
                 } else if (accountType == "admin") {
 
                 }
@@ -66,15 +67,30 @@ const LoginPage = () => {
         } finally {
             setLoading(false); // Hide loading spinner
         }
+
+
     }
+
+    const handleSignup = () => {
+        window.location.href = '/pages/signup';
+    };
 
     return (
         <div className="min-h-screen flex items-center ">
+
             <div className="p-4 md:p-5 font-sans max-w-md mx-auto">
+
                 <div className="mb-6">
-                    <div className="bg-gray-100 p-3 rounded-t-md font-medium text-black text-center">
-                        Login
+                    <div className="flex justify-between items-center bg-gray-100 p-3 rounded-t-md font-medium text-black">
+                        <div className="text-center w-full">Login Here</div>
+                        <button
+                            onClick={handleSignup}
+                            className="px-3 py-1 bg-gray-200 text-blue-600 rounded-md hover:bg-gray-300 font-medium ml-4"
+                        >
+                            Sign Up
+                        </button>
                     </div>
+
                     <div className="border border-gray-300 rounded-b-md p-4">
                         {/* Username */}
                         <div className="mb-4">

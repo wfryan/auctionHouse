@@ -2,17 +2,24 @@
 import React from 'react';
 
 const SellerProfile = () => {
+
+  const params = new URLSearchParams(window.location.search);
+
+  const user = params.get('username'); //temporary hardcoded user
+
+  const appendedUrl = '?username=' + user;
+
   // Dummy data, eventually use Lambda Functions to retrieve information
   const userData = {
-    username: "JohnDoe123",
-    description: "Professional seller since 2020. Specializing in electronics and accessories.",
-    balance: "$1,234.56"
+    username: user,
+    description: "",
+    balance: ""
   };
 
 
   // Function to go back to the previous page
   const handleBackButton = () => {
-    window.location.href = '/pages/auction_dashboard';
+    window.location.href = '/pages/auction_dashboard' + appendedUrl;
   };
 
   return (
@@ -37,15 +44,15 @@ const SellerProfile = () => {
           {/* Left side - User Information */}
           <div className="w-full md:w-3/5 space-y-3">
             <div className="bg-gray-100 p-3 rounded-md text-black">
-              {userData.username}
+              {"Name: " + userData.username}
             </div>
 
             <div className="bg-gray-100 p-3 rounded-md min-h-16 text-black">
-              {userData.description}
+              {"Description: " + userData.description}
             </div>
 
             <div className="bg-gray-100 p-3 rounded-md text-black">
-              {userData.balance}
+              {"Balance: " + userData.balance}
             </div>
           </div>
 
