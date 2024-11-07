@@ -12,7 +12,11 @@ interface AuctionTableProps {
   isInactive: boolean;
 }
 
-const user = 'test'; //temporary hardcoded user
+const params = new URLSearchParams(window.location.search);
+
+const user = params.get('username'); //temporary hardcoded user
+
+const appendedUrl = '?username=' + user;
 
 const AuctionDashboard = () => {
   // Dummy data for different auction categories
@@ -30,12 +34,12 @@ const AuctionDashboard = () => {
 
   //Handler for routing the user to the profile page
   const handleProfileClick = () => {
-    window.location.href = '/pages/seller_profile';
+    window.location.href = '/pages/seller_profile' + appendedUrl;
   };
 
   //Handler for routing the user to the profile page
   const handleCreateAuction = () => {
-    window.location.href = '/pages/create_auction';
+    window.location.href = '/pages/create_auction' + appendedUrl;
   };
 
   const getAuctionInfo = async () => {

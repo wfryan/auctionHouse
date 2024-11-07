@@ -17,7 +17,13 @@ const CreateAuctionForm = () => {
     image: null as File | null
   });
 
-  const username = 'test'
+  const params = new URLSearchParams(window.location.search);
+
+  const user = params.get('username'); //temporary hardcoded user
+
+  const appendedUrl = '?username=' + user;
+
+  const username = user
 
 
 
@@ -129,7 +135,7 @@ const CreateAuctionForm = () => {
         //alert(response.data);
         console.log(response.data);
         // Redirect only after a successful response
-        window.location.href = '/seller';
+        window.location.href = '/pages/auction_dashboard' + appendedUrl;
       } else {
         // Handle any other status codes appropriately
         alert('Error: ' + response.data.body); // Adjust based on your response structure
@@ -148,6 +154,9 @@ const CreateAuctionForm = () => {
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-center">
             Create New Auction
           </h1>
+          <div>
+            <h1>{user}</h1>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
