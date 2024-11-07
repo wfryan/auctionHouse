@@ -15,7 +15,7 @@ export default class AuctionItem{
     public getPicture(){
         return this.picture
     }
-    public getAII(){
+    public getAIId(){
         return this.auction_item_id
     }
     public getInfo(){
