@@ -11,3 +11,9 @@
 - Create Item
 - Review Item
 - Publish Item
+
+## Run auctionHouse
+
+- initialize npm in frontend/auction-house
+- npm install axios
+- npm run dev
