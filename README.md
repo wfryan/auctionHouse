@@ -15,5 +15,4 @@
 ## Run auctionHouse
 
 - initialize npm in frontend/auction-house through npm install
-- npm install axios
 - npm run dev
