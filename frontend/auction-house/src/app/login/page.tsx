@@ -42,8 +42,6 @@ const LoginPage = () => {
                 //alert(response.data);
                 console.log(response.data);
                 setDE("");
-                // Redirect only after a successful response
-                //window.location.href = '/seller';
                 const accountType = response.data.body.type;
                 const appendedUrl = '?username=' + username;
                 if (accountType == "buyer") {
@@ -74,7 +72,8 @@ const LoginPage = () => {
     }
 
     const handleSignup = () => {
-        window.location.href = '/pages/signup';
+        router.push('/signup')
+        //window.location.href = '/pages/signup';
     };
 
     return (

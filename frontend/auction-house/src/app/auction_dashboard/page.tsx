@@ -1,7 +1,7 @@
 'use client';
 import React, { Suspense, useEffect, useState } from 'react';
 import axios from "axios";
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 const instance = axios.create({
   baseURL: "https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse"
 })
@@ -25,6 +25,7 @@ interface AuctionTableProps {
 
 
 const AuctionDashboard = () => {
+  const router = useRouter();
 
   const searchParams = useSearchParams();
 
@@ -46,12 +47,14 @@ const AuctionDashboard = () => {
 
   //Handler for routing the user to the profile page
   const handleProfileClick = () => {
-    window.location.href = '/pages/seller_profile' + appendedUrl;
+    router.push('/seller_profile' + appendedUrl)
+    //window.location.href = '/pages/seller_profile' + appendedUrl;
   };
 
   //Handler for routing the user to the profile page
   const handleCreateAuction = () => {
-    window.location.href = '/pages/create_auction' + appendedUrl;
+    router.push('/create_auction' + appendedUrl)
+    //window.location.href = '/pages/create_auction' + appendedUrl;
   };
 
   const publishAuction = async (auction_id: number) => {
@@ -187,7 +190,7 @@ const AuctionDashboard = () => {
 
 const AuctionDashboardWrapper = () => {
   return (
-    <Suspense fallback={<div>Loading search page...</div>}>
+    <Suspense fallback={<div>Loading Dashboard...</div>}>
       <AuctionDashboard />
     </Suspense>
   );
