@@ -1,6 +1,7 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import axios from "axios";
+import { useSearchParams } from 'next/navigation';
 const instance = axios.create({
   baseURL: "https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse"
 })
@@ -22,18 +23,14 @@ interface AuctionTableProps {
   isInactive: boolean;
 }
 
-let params = null;
-
-let user = null;
-if (typeof window !== "undefined") {
-  params = new URLSearchParams(window.location.search);
-
-  user = params.get('username'); //temporary hardcoded user
-}
-
-const appendedUrl = '?username=' + user;
 
 const AuctionDashboard = () => {
+
+  const searchParams = useSearchParams();
+
+  const user = searchParams?.get('username'); // JohnDoe
+
+  const appendedUrl = '?username=' + user;
   // Dummy data for different auction categories
 
   const [auctionData, setAuctionData] = useState<Record<string, Auction[]>>({
@@ -156,35 +153,44 @@ const AuctionDashboard = () => {
   );
 
   return (
-    <div className="p-4 md:p-5 font-sans max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold">Auction Dashboard</h1>
-        <div className="flex space-x-4">
-          <button
-            onClick={handleProfileClick}
-            className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black"
-          >
-            Profile
-          </button>
-          <button
-            onClick={handleCreateAuction}
-            className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black"
-          >
-            Create New Auction
-          </button>
+    <Suspense>
+      <div className="p-4 md:p-5 font-sans max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold">Auction Dashboard</h1>
+          <div className="flex space-x-4">
+            <button
+              onClick={handleProfileClick}
+              className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black"
+            >
+              Profile
+            </button>
+            <button
+              onClick={handleCreateAuction}
+              className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black"
+            >
+              Create New Auction
+            </button>
+          </div>
+        </div>
+        <div className="space-y-6">
+          <AuctionTable title="UNLISTED" items={auctionData.unlisted} isInactive={true} />
+          <AuctionTable title="ACTIVE" items={auctionData.active} isInactive={false} />
+          <AuctionTable title="BOUGHT" items={auctionData.bought} isInactive={false} />
+          <AuctionTable title="FAILED" items={auctionData.failed} isInactive={false} />
+          <AuctionTable title="ARCHIVED" items={auctionData.archived} isInactive={false} />
+          <AuctionTable title="FROZEN" items={auctionData.frozen} isInactive={false} />
         </div>
       </div>
-
-      <div className="space-y-6">
-        <AuctionTable title="UNLISTED" items={auctionData.unlisted} isInactive={true} />
-        <AuctionTable title="ACTIVE" items={auctionData.active} isInactive={false} />
-        <AuctionTable title="BOUGHT" items={auctionData.bought} isInactive={false} />
-        <AuctionTable title="FAILED" items={auctionData.failed} isInactive={false} />
-        <AuctionTable title="ARCHIVED" items={auctionData.archived} isInactive={false} />
-        <AuctionTable title="FROZEN" items={auctionData.frozen} isInactive={false} />
-      </div>
-    </div>
+    </Suspense>
   );
 };
 
-export default AuctionDashboard;
+const AuctionDashboardWrapper = () => {
+  return (
+    <Suspense fallback={<div>Loading search page...</div>}>
+      <AuctionDashboard />
+    </Suspense>
+  );
+}
+
+export default AuctionDashboardWrapper;

@@ -1,5 +1,6 @@
 'use client'
 import { useState } from "react"
+import { useRouter } from 'next/navigation';
 
 import axios from "axios";
 const instance = axios.create({
@@ -8,6 +9,7 @@ const instance = axios.create({
 
 
 const LoginPage = () => {
+    const router = useRouter();
     const [displayError, setDE] = useState("")
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -45,9 +47,9 @@ const LoginPage = () => {
                 const accountType = response.data.body.type;
                 const appendedUrl = '?username=' + username;
                 if (accountType == "buyer") {
-                    window.location.href = '/pages/search' + appendedUrl;
+                    router.push('/search' + appendedUrl);
                 } else if (accountType == "seller") {
-                    window.location.href = '/pages/auction_dashboard' + appendedUrl;
+                    router.push('/auction_dashboard' + appendedUrl);
                 } else if (accountType == "admin") {
 
                 }
