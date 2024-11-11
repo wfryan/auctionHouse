@@ -3,9 +3,16 @@ import React from 'react';
 
 const SellerProfile = () => {
 
-  const params = new URLSearchParams(window.location.search);
+  let params = null;
 
-  const user = params.get('username'); //temporary hardcoded user
+  let user = null;
+  if (typeof window !== "undefined") {
+    params = new URLSearchParams(window.location.search);
+
+    user = params.get('username'); //temporary hardcoded user
+  }
+
+
 
   const appendedUrl = '?username=' + user;
 

@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useRef } from "react"
 import AuctionItemClickable from "@/app/components/AuctionItemClickable"
 import AuctionItem from "@/app/entitites/AuctionItem"
 import Link from "next/link"
@@ -27,7 +27,7 @@ export default function Search() {
             const awaitResp = await resp
             const jsonResp = await awaitResp.json()
             console.log(jsonResp)
-            let tmpArray: any = []
+            const tmpArray: AuctionItem[] = []
             let curItem;
             for (let i = 0; i < jsonResp.body.items.length; i++) {
                 curItem = jsonResp.body.items[i]
@@ -35,26 +35,46 @@ export default function Search() {
             }
             //set auctions
             console.log(tmpArray)
-            setAuctions(prev => tmpArray)
+            setAuctions(tmpArray)
         }
         catch (error) {
             setDispError(true)
+            console.log(error)
         }
     }
 
-    const setStorage = (itemId: any, itemName: any, itemInfo: any, itemPic: any) => {
-        localStorage.setItem("id", itemId)
+    const setStorage = async (itemId: number, itemName: string, itemInfo: string, itemPic: File) => {
+        localStorage.setItem("id", itemId.toString())
         localStorage.setItem("name", itemName)
         localStorage.setItem("info", itemInfo)
-        const dataArray = new Uint8Array(itemPic.data)
-        const blob = new Blob([dataArray], { type: "application/octet-stream" })
+
         const reader = new FileReader()
-        reader.onloadend = () => {
-            if (typeof reader.result == 'string') {
-                localStorage.setItem("img", reader.result)
+        reader.readAsArrayBuffer(itemPic);
+        //NOTE: this should include error checking
+
+        let uint8Array = null;
+        try {
+            if (reader.result instanceof ArrayBuffer) {
+                uint8Array = new Uint8Array(reader.result);
+
             }
+        } catch {
+            console.log(new Error("Failed to read file as ArrayBuffer"))
         }
-        reader.readAsDataURL(blob)
+        let blob = null;
+        if (uint8Array != null) {
+            blob = new Blob([uint8Array], { type: "application/octet-stream" })
+
+            reader.onloadend = () => {
+                if (typeof reader.result == 'string') {
+                    localStorage.setItem("img", reader.result)
+                }
+            }
+            reader.readAsDataURL(blob)
+        }
+
+
+
     }
 
     const handleSignupClick = () => {

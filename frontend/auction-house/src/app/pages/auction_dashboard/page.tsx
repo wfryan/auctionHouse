@@ -5,13 +5,13 @@ const instance = axios.create({
   baseURL: "https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse"
 })
 
-class Auction{
+class Auction {
   auction_id: number
   item_name: string
 
-  constructor(aid:number, name:string){
-    this.auction_id=aid;
-    this.item_name=name;
+  constructor(aid: number, name: string) {
+    this.auction_id = aid;
+    this.item_name = name;
   }
 }
 
@@ -22,9 +22,14 @@ interface AuctionTableProps {
   isInactive: boolean;
 }
 
-const params = new URLSearchParams(window.location.search);
+let params = null;
 
-const user = params.get('username'); //temporary hardcoded user
+let user = null;
+if (typeof window !== "undefined") {
+  params = new URLSearchParams(window.location.search);
+
+  user = params.get('username'); //temporary hardcoded user
+}
 
 const appendedUrl = '?username=' + user;
 
@@ -52,40 +57,40 @@ const AuctionDashboard = () => {
     window.location.href = '/pages/create_auction' + appendedUrl;
   };
 
-  const publishAuction = async (auction_id: number)=>{
-    let payload = JSON.stringify({
-      auctionId:auction_id
+  const publishAuction = async (auction_id: number) => {
+    const payload = JSON.stringify({
+      auctionId: auction_id
     });
 
     console.log(auction_id)
-     try {
+    try {
       const response = await instance.post('/auction/publish', payload);
-      let status = response.data.statusCode;
+      const status = response.data.statusCode;
 
-      if(status === 200){
+      if (status === 200) {
         getAuctionInfo();
       }
       console.log(response)
     }
-    catch(error){
+    catch (error) {
       console.log(error)
       alert("Error publishing auction")
-    } 
+    }
 
   };
 
   const getAuctionInfo = async () => {
-    let functionInput = JSON.stringify({
+    const functionInput = JSON.stringify({
       username: user
     });
 
     try {
       const response = await instance.post('/auction/reviewAuctions', functionInput);
-      let status = response.data.statusCode;
+      const status = response.data.statusCode;
       console.log(response);
 
       if (status === 200) {
-        let auctionData = response.data.body;
+        const auctionData = response.data.body;
         console.log(response.data.body);
 
         const processedData: Record<string, Auction[]> = {};
@@ -94,7 +99,8 @@ const AuctionDashboard = () => {
           processedData[key] = auctionData[key].map((item: { auction_id: number, item_name: string }) => ({
             auction_id: item.auction_id,
             item_name: item.item_name
-          }));        });
+          }));
+        });
         console.log(processedData)
         console.log("got here")
         setAuctionData(processedData);
@@ -129,7 +135,7 @@ const AuctionDashboard = () => {
               <span>{item.item_name}</span>
               {isInactive && (
                 <div className="space-x-2">
-                  <button onClick={()=>publishAuction(item.auction_id)}className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300">
+                  <button onClick={() => publishAuction(item.auction_id)} className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300">
                     Publish
                   </button>
                   <button className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300">

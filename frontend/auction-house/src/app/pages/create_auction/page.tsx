@@ -17,9 +17,14 @@ const CreateAuctionForm = () => {
     image: null as File | null
   });
 
-  const params = new URLSearchParams(window.location.search);
+  let params = null;
 
-  const user = params.get('username'); //temporary hardcoded user
+  let user = null;
+  if (typeof window !== "undefined") {
+    params = new URLSearchParams(window.location.search);
+
+    user = params.get('username'); //temporary hardcoded user
+  }
 
   const appendedUrl = '?username=' + user;
 
@@ -116,7 +121,7 @@ const CreateAuctionForm = () => {
       base64data = await fileToBase64(formData.image);
     }
 
-    let functionInput = JSON.stringify({
+    const functionInput = JSON.stringify({
       username: username,
       itemName: formData.itemName,
       startingPrice: formData.startingPrice,
@@ -128,7 +133,7 @@ const CreateAuctionForm = () => {
 
     try {
       const response = await instance.post('/auction/createAuction', functionInput);
-      let status = response.data.statusCode;
+      const status = response.data.statusCode;
       console.log(response);
 
       if (status === 200) {
