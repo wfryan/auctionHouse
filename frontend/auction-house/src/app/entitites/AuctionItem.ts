@@ -1,15 +1,19 @@
+interface ImageResponse {
+    data: number[],
+    type: string
+}
 export default class AuctionItem {
     private auction_item_id: number
     private item_name: string
     private information: string
-    private picture: File
-    constructor(aiId: number, iN: string, info: string, pic: File) {
+    private picture: ImageResponse
+    constructor(aiId: number, iN: string, info: string, pic: ImageResponse) {
         this.auction_item_id = aiId
         this.item_name = iN
         this.information = info
         this.picture = pic
     }
-    public setPicture(image: File) {
+    public setPicture(image: ImageResponse) {
         this.picture = image
     }
     public getPicture() {

@@ -2,8 +2,14 @@
 import { useState, useRef } from "react"
 import AuctionItemClickable from "@/app/components/AuctionItemClickable"
 import AuctionItem from "@/app/entitites/AuctionItem"
-import Link from "next/link"
+import { useRouter } from 'next/navigation'
 export default function Search() {
+    interface ImageResponse {
+        data: number[],
+        type: string
+    }
+    
+    const router = useRouter()
     const [auctions, setAuctions] = useState<AuctionItem[]>([])
     const [dispError, setDispError] = useState(false)
     const input = useRef<HTMLInputElement>(null)
@@ -43,44 +49,27 @@ export default function Search() {
         }
     }
 
-    const setStorage = async (itemId: number, itemName: string, itemInfo: string, itemPic: File) => {
+    const setStorage = async (itemId: number, itemName: string, itemInfo: string, itemPic: ImageResponse) => {
         localStorage.setItem("id", itemId.toString())
         localStorage.setItem("name", itemName)
         localStorage.setItem("info", itemInfo)
 
         const reader = new FileReader()
-        reader.readAsArrayBuffer(itemPic);
-        //NOTE: this should include error checking
-
-        let uint8Array = null;
-        try {
-            if (reader.result instanceof ArrayBuffer) {
-                uint8Array = new Uint8Array(reader.result);
-
+        const dataArray = new Uint8Array(itemPic.data)
+        const blob = new Blob([dataArray], { type: "application/octet-stream" })
+        reader.onloadend = () => {
+            if (typeof reader.result == 'string') {
+                localStorage.setItem("img", reader.result)
             }
-        } catch {
-            console.log(new Error("Failed to read file as ArrayBuffer"))
         }
-        let blob = null;
-        if (uint8Array != null) {
-            blob = new Blob([uint8Array], { type: "application/octet-stream" })
-
-            reader.onloadend = () => {
-                if (typeof reader.result == 'string') {
-                    localStorage.setItem("img", reader.result)
-                }
-            }
-            reader.readAsDataURL(blob)
-        }
-
-
-
+        reader.readAsDataURL(blob)
+        console.log("page: " + localStorage.getItem("img"))
+        router.push("/item")
     }
 
     const handleSignupClick = () => {
-        window.location.href = '/pages/login';
+        router.push("/login")
     };
-
 
     return (
         <div>
@@ -94,9 +83,9 @@ export default function Search() {
                 auctions.map(auction => {
                     return (
                         <div key={auction.getAIId()}>
-                            <Link onClick={() => setStorage(auction.getAIId(), auction.getIN(), auction.getInfo(), auction.getPicture())} href={`./${auction.getAIId()}`}>
+                            <div onClick={() => setStorage(auction.getAIId(), auction.getIN(), auction.getInfo(), auction.getPicture())}>
                                 <AuctionItemClickable aucItem={auction}></AuctionItemClickable>
-                            </Link>
+                            </div>
                         </div>
 
                     )
