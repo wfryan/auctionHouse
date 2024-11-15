@@ -2,7 +2,7 @@
 import Auction from "@/app/entitites/Auction"
 import { useEffect, useState } from "react"
 
-export default function ItemPage(){
+export default function ItemPage() {
     const [auction, setAuction] = useState<Auction | null>(null)
     const [dispError, setDispError] = useState(false) //error unused atm
     const displayImage = (imgElement: HTMLImageElement) => {
@@ -11,11 +11,11 @@ export default function ItemPage(){
             imgElement.src = dataUrl;
         }
     }
-    
+
     useEffect(() => {
         console.log(localStorage.getItem("id"))
         const fetchData = async () => {
-            try{
+            try {
                 const body = {
                     id: localStorage.getItem("id")
                 }
@@ -31,15 +31,20 @@ export default function ItemPage(){
                 console.log(jsonItemResp)
                 setAuction(new Auction(jsonItemResp.auction_id, jsonItemResp.item_id, jsonItemResp.seller_id, jsonItemResp.starting_bid, jsonItemResp.highest_bid, jsonItemResp.status, jsonItemResp.start_time, jsonItemResp.end_time))
                 displayImage((document.getElementById("itemImg") as HTMLImageElement))
-            } catch(error){
+            } catch (error) {
                 setDispError(true)
+                console.log(error);
+                console.log(dispError);
             }
         }
         fetchData()
     }, [])
 
-    return(
+    return (
         <div>
+            {auction == null &&
+                <div />
+            }
             {auction != null &&
                 <div>
                     <p>auction id: {auction?.getAID()}</p>
@@ -51,7 +56,7 @@ export default function ItemPage(){
                     <p>starting bid: {auction.getSBid()}</p>
                     <p>highest bid: {auction.getHBid()}</p>
                     <p>status: {auction.getStatus()}</p>
-                    <img id = "itemImg"></img>
+                    <img id="itemImg"></img>
                 </div>
             }
         </div>

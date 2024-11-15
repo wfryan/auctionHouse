@@ -1,5 +1,6 @@
 'use client'
 import { useState } from "react"
+import { useRouter } from 'next/navigation';
 
 import axios from "axios";
 const instance = axios.create({
@@ -8,6 +9,7 @@ const instance = axios.create({
 
 
 const LoginPage = () => {
+    const router = useRouter();
     const [displayError, setDE] = useState("")
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -16,7 +18,7 @@ const LoginPage = () => {
     const login = async () => {
 
 
-        let functionInput = JSON.stringify({
+        const functionInput = JSON.stringify({
             username: username,
             password: password
         });
@@ -33,21 +35,19 @@ const LoginPage = () => {
 
         try {
             const response = await instance.post('/users/login', functionInput);
-            let status = response.data.statusCode;
+            const status = response.data.statusCode;
             console.log(response);
 
             if (status === 200) {
                 //alert(response.data);
                 console.log(response.data);
                 setDE("");
-                // Redirect only after a successful response
-                //window.location.href = '/seller';
-                let accountType = response.data.body.type;
+                const accountType = response.data.body.type;
                 const appendedUrl = '?username=' + username;
                 if (accountType == "buyer") {
-                    window.location.href = '/pages/search' + appendedUrl;
+                    router.push('/search' + appendedUrl);
                 } else if (accountType == "seller") {
-                    window.location.href = '/pages/auction_dashboard' + appendedUrl;
+                    router.push('/auction_dashboard' + appendedUrl);
                 } else if (accountType == "admin") {
 
                 }
@@ -72,7 +72,8 @@ const LoginPage = () => {
     }
 
     const handleSignup = () => {
-        window.location.href = '/pages/signup';
+        router.push('/signup')
+        //window.location.href = '/pages/signup';
     };
 
     return (

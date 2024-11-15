@@ -1,9 +1,10 @@
 'use client'
+import { useRouter } from "next/navigation"
 import { useState } from "react"
-import User from "@/app/entitites/User"
 export default function Signup() {
     const [adSelected, setAdSelected] = useState(false)
     const [displayError, setDE] = useState(false)
+    const router = useRouter();
     const signupFunction = async () => {
         const username = (document.getElementById("user") as HTMLInputElement).value
         const password = (document.getElementById("pass") as HTMLInputElement).value
@@ -17,6 +18,7 @@ export default function Signup() {
             type: type,
             location: location
         }
+        
         console.log(body)
 
         try {
@@ -36,8 +38,8 @@ export default function Signup() {
             console.log(jsonResp)
 
             if (jsonResp.statusCode == 200) {
-                const user = new User(jsonResp.body.userId, username, parseInt(age), location, type, 0)
-                window.location.href = '/pages/login';
+                //const user = new User(jsonResp.body.userId, username, parseInt(age), location, type, 0)
+                router.push('/login')
             }
             else {
                 throw new Error("error")

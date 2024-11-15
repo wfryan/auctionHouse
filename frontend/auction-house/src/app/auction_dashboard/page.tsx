@@ -1,17 +1,18 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import axios from "axios";
+import { useRouter, useSearchParams } from 'next/navigation';
 const instance = axios.create({
   baseURL: "https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse"
 })
 
-class Auction{
+class Auction {
   auction_id: number
   item_name: string
 
-  constructor(aid:number, name:string){
-    this.auction_id=aid;
-    this.item_name=name;
+  constructor(aid: number, name: string) {
+    this.auction_id = aid;
+    this.item_name = name;
   }
 }
 
@@ -22,13 +23,15 @@ interface AuctionTableProps {
   isInactive: boolean;
 }
 
-const params = new URLSearchParams(window.location.search);
-
-const user = params.get('username'); //temporary hardcoded user
-
-const appendedUrl = '?username=' + user;
 
 const AuctionDashboard = () => {
+  const router = useRouter();
+
+  const searchParams = useSearchParams();
+
+  const user = searchParams?.get('username'); // JohnDoe
+
+  const appendedUrl = '?username=' + user;
   // Dummy data for different auction categories
 
   const [auctionData, setAuctionData] = useState<Record<string, Auction[]>>({
@@ -44,48 +47,50 @@ const AuctionDashboard = () => {
 
   //Handler for routing the user to the profile page
   const handleProfileClick = () => {
-    window.location.href = '/pages/seller_profile' + appendedUrl;
+    router.push('/seller_profile' + appendedUrl)
+    //window.location.href = '/pages/seller_profile' + appendedUrl;
   };
 
   //Handler for routing the user to the profile page
   const handleCreateAuction = () => {
-    window.location.href = '/pages/create_auction' + appendedUrl;
+    router.push('/create_auction' + appendedUrl)
+    //window.location.href = '/pages/create_auction' + appendedUrl;
   };
 
-  const publishAuction = async (auction_id: number)=>{
-    let payload = JSON.stringify({
-      auctionId:auction_id
+  const publishAuction = async (auction_id: number) => {
+    const payload = JSON.stringify({
+      auctionId: auction_id
     });
 
     console.log(auction_id)
-     try {
+    try {
       const response = await instance.post('/auction/publish', payload);
-      let status = response.data.statusCode;
+      const status = response.data.statusCode;
 
-      if(status === 200){
+      if (status === 200) {
         getAuctionInfo();
       }
       console.log(response)
     }
-    catch(error){
+    catch (error) {
       console.log(error)
       alert("Error publishing auction")
-    } 
+    }
 
   };
 
   const getAuctionInfo = async () => {
-    let functionInput = JSON.stringify({
+    const functionInput = JSON.stringify({
       username: user
     });
 
     try {
       const response = await instance.post('/auction/reviewAuctions', functionInput);
-      let status = response.data.statusCode;
+      const status = response.data.statusCode;
       console.log(response);
 
       if (status === 200) {
-        let auctionData = response.data.body;
+        const auctionData = response.data.body;
         console.log(response.data.body);
 
         const processedData: Record<string, Auction[]> = {};
@@ -94,7 +99,8 @@ const AuctionDashboard = () => {
           processedData[key] = auctionData[key].map((item: { auction_id: number, item_name: string }) => ({
             auction_id: item.auction_id,
             item_name: item.item_name
-          }));        });
+          }));
+        });
         console.log(processedData)
         console.log("got here")
         setAuctionData(processedData);
@@ -129,7 +135,7 @@ const AuctionDashboard = () => {
               <span>{item.item_name}</span>
               {isInactive && (
                 <div className="space-x-2">
-                  <button onClick={()=>publishAuction(item.auction_id)}className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300">
+                  <button onClick={() => publishAuction(item.auction_id)} className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300">
                     Publish
                   </button>
                   <button className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300">
@@ -150,35 +156,44 @@ const AuctionDashboard = () => {
   );
 
   return (
-    <div className="p-4 md:p-5 font-sans max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold">Auction Dashboard</h1>
-        <div className="flex space-x-4">
-          <button
-            onClick={handleProfileClick}
-            className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black"
-          >
-            Profile
-          </button>
-          <button
-            onClick={handleCreateAuction}
-            className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black"
-          >
-            Create New Auction
-          </button>
+    <Suspense>
+      <div className="p-4 md:p-5 font-sans max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold">Auction Dashboard</h1>
+          <div className="flex space-x-4">
+            <button
+              onClick={handleProfileClick}
+              className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black"
+            >
+              Profile
+            </button>
+            <button
+              onClick={handleCreateAuction}
+              className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black"
+            >
+              Create New Auction
+            </button>
+          </div>
+        </div>
+        <div className="space-y-6">
+          <AuctionTable title="UNLISTED" items={auctionData.unlisted} isInactive={true} />
+          <AuctionTable title="ACTIVE" items={auctionData.active} isInactive={false} />
+          <AuctionTable title="BOUGHT" items={auctionData.bought} isInactive={false} />
+          <AuctionTable title="FAILED" items={auctionData.failed} isInactive={false} />
+          <AuctionTable title="ARCHIVED" items={auctionData.archived} isInactive={false} />
+          <AuctionTable title="FROZEN" items={auctionData.frozen} isInactive={false} />
         </div>
       </div>
-
-      <div className="space-y-6">
-        <AuctionTable title="UNLISTED" items={auctionData.unlisted} isInactive={true} />
-        <AuctionTable title="ACTIVE" items={auctionData.active} isInactive={false} />
-        <AuctionTable title="BOUGHT" items={auctionData.bought} isInactive={false} />
-        <AuctionTable title="FAILED" items={auctionData.failed} isInactive={false} />
-        <AuctionTable title="ARCHIVED" items={auctionData.archived} isInactive={false} />
-        <AuctionTable title="FROZEN" items={auctionData.frozen} isInactive={false} />
-      </div>
-    </div>
+    </Suspense>
   );
 };
 
-export default AuctionDashboard;
+const AuctionDashboardWrapper = () => {
+  return (
+    <Suspense fallback={<div>Loading Dashboard...</div>}>
+      <AuctionDashboard />
+    </Suspense>
+  );
+}
+
+export default AuctionDashboardWrapper;
