@@ -42,8 +42,18 @@ const LoginPage = () => {
                 //alert(response.data);
                 console.log(response.data);
                 setDE("");
-                const accountType = response.data.body.type;
+                const body = response.data.body
+                const accountType = body.type;
                 const appendedUrl = '?username=' + username;
+                console.log(body.balance)
+                localStorage.setItem("userDesc", body.descritpion)
+                localStorage.setItem("userAge", body.age)
+                localStorage.setItem("userType", accountType)
+                localStorage.setItem("userBal", body.balance)
+                localStorage.setItem("userLocation", body.location)
+                localStorage.setItem("userActive", body.is_active)
+                localStorage.setItem("userId", body.id)
+                
                 if (accountType == "buyer") {
                     router.push('/search' + appendedUrl);
                 } else if (accountType == "seller") {
