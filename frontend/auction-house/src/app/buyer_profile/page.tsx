@@ -65,7 +65,7 @@ export default function BuyerProfile(){
             <div className="flex justify-between bg-gray-100 p-3 rounded-md text-black">
               {`Balance: $${balance}`}
               <div className="px-20">
-                <input className="rounded-md w-32 [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-1 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-1 [&::-webkit-outer-spin-button]:appearance-none text-end" id = "addInput" onKeyUp={() => checkAddition()} defaultValue={1} type = "number"></input>
+                <input  id = "addInput" onKeyUp={() => checkAddition()} defaultValue={1} type = "number" className="rounded-md w-32 [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-1 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-1 [&::-webkit-outer-spin-button]:appearance-none text-end"></input>
                 <button className="hover:bg-green-100 px-1 border-2 border-black rounded-md mx-1" onClick={() => addToBalance()}>Add Funds</button>
               </div>
             </div>
