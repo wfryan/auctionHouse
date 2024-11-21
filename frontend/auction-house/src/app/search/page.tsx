@@ -1,9 +1,15 @@
 'use client'
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useRef } from "react"
 import AuctionItemClickable from "@/app/components/AuctionItemClickable"
 import AuctionItem from "@/app/entitites/AuctionItem"
-import Link from "next/link"
+import { useRouter } from 'next/navigation'
 export default function Search() {
+    interface ImageResponse {
+        data: number[],
+        type: string
+    }
+    
+    const router = useRouter()
     const [auctions, setAuctions] = useState<AuctionItem[]>([])
     const [dispError, setDispError] = useState(false)
     const input = useRef<HTMLInputElement>(null)
@@ -27,7 +33,7 @@ export default function Search() {
             const awaitResp = await resp
             const jsonResp = await awaitResp.json()
             console.log(jsonResp)
-            let tmpArray: any = []
+            const tmpArray: AuctionItem[] = []
             let curItem;
             for (let i = 0; i < jsonResp.body.items.length; i++) {
                 curItem = jsonResp.body.items[i]
@@ -35,32 +41,35 @@ export default function Search() {
             }
             //set auctions
             console.log(tmpArray)
-            setAuctions(prev => tmpArray)
+            setAuctions(tmpArray)
         }
         catch (error) {
             setDispError(true)
+            console.log(error)
         }
     }
 
-    const setStorage = (itemId: any, itemName: any, itemInfo: any, itemPic: any) => {
-        localStorage.setItem("id", itemId)
+    const setStorage = async (itemId: number, itemName: string, itemInfo: string, itemPic: ImageResponse) => {
+        localStorage.setItem("id", itemId.toString())
         localStorage.setItem("name", itemName)
         localStorage.setItem("info", itemInfo)
+
+        const reader = new FileReader()
         const dataArray = new Uint8Array(itemPic.data)
         const blob = new Blob([dataArray], { type: "application/octet-stream" })
-        const reader = new FileReader()
         reader.onloadend = () => {
             if (typeof reader.result == 'string') {
                 localStorage.setItem("img", reader.result)
             }
         }
         reader.readAsDataURL(blob)
+        console.log("page: " + localStorage.getItem("img"))
+        router.push("/item")
     }
 
     const handleSignupClick = () => {
-        window.location.href = '/pages/login';
+        router.push("/login")
     };
-
 
     return (
         <div>
@@ -74,9 +83,9 @@ export default function Search() {
                 auctions.map(auction => {
                     return (
                         <div key={auction.getAIId()}>
-                            <Link onClick={() => setStorage(auction.getAIId(), auction.getIN(), auction.getInfo(), auction.getPicture())} href={`./${auction.getAIId()}`}>
+                            <div onClick={() => setStorage(auction.getAIId(), auction.getIN(), auction.getInfo(), auction.getPicture())}>
                                 <AuctionItemClickable aucItem={auction}></AuctionItemClickable>
-                            </Link>
+                            </div>
                         </div>
 
                     )

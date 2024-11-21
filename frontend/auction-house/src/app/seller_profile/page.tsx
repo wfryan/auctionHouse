@@ -1,11 +1,14 @@
 'use client';
-import React from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import React, { Suspense } from 'react';
 
 const SellerProfile = () => {
 
-  const params = new URLSearchParams(window.location.search);
+  const router = useRouter();
 
-  const user = params.get('username'); //temporary hardcoded user
+  const searchParams = useSearchParams();
+
+  const user = searchParams?.get('username'); // JohnDoe
 
   const appendedUrl = '?username=' + user;
 
@@ -19,7 +22,7 @@ const SellerProfile = () => {
 
   // Function to go back to the previous page
   const handleBackButton = () => {
-    window.location.href = '/pages/auction_dashboard' + appendedUrl;
+    router.push('/auction_dashboard' + appendedUrl)
   };
 
   return (
@@ -78,4 +81,12 @@ const SellerProfile = () => {
   );
 };
 
-export default SellerProfile;
+const SellerProfileWrapper =() => {
+  return(
+    <Suspense fallback={<div>Awaiting user data</div>}>
+      <SellerProfile/>
+    </Suspense>
+  )
+}
+
+export default SellerProfileWrapper;
