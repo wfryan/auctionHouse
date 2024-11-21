@@ -1,7 +1,8 @@
 'use client';
 import React, { useState, ChangeEvent, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import instance from '../utils/auctionHouseApi';
+import { instance, header } from '../utils/auctionHouseApi';
+import { getUsername } from '../utils/jwt';
 
 const CreateAuctionForm = () => {
   //State Declaration for Form Data
@@ -110,8 +111,10 @@ const CreateAuctionForm = () => {
       base64data = await fileToBase64(formData.image);
     }
 
+    console.log(getUsername());
+
     const functionInput = JSON.stringify({
-      username: username,
+      username: getUsername(),
       itemName: formData.itemName,
       startingPrice: formData.startingPrice,
       itemDescription: formData.itemDescription,
@@ -129,7 +132,7 @@ const CreateAuctionForm = () => {
         //alert(response.data);
         console.log(response.data);
         // Redirect only after a successful response
-        router.push('/auction_dashboard' + appendedUrl)
+        router.push('/auction_dashboard')
         //window.location.href = '/pages/auction_dashboard' + appendedUrl;
       } else {
         // Handle any other status codes appropriately

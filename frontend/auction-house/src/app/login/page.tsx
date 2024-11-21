@@ -2,7 +2,7 @@
 import { useState } from "react"
 import { useRouter } from 'next/navigation';
 
-import instance from '../utils/auctionHouseApi';
+import { instance, header } from '../utils/auctionHouseApi';
 import { saveToken } from "../utils/cookie";
 
 

@@ -3,7 +3,7 @@ import { useState, useRef } from "react"
 import AuctionItemClickable from "@/app/components/AuctionItemClickable"
 import AuctionItem from "@/app/entitites/AuctionItem"
 import { useRouter } from 'next/navigation'
-import instance from '../utils/auctionHouseApi';
+import { instance } from '../utils/auctionHouseApi';
 
 
 export default function Search() {

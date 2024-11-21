@@ -1,9 +1,9 @@
 'use client';
 import React, { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import instance from '../utils/auctionHouseApi';
+import { instance, header } from '../utils/auctionHouseApi';
 import { removeToken, getToken } from '../utils/cookie';
-import { decodeToken } from '../utils/jwt';
+import { decodeToken, getUsername } from '../utils/jwt';
 
 class Auction {
   auction_id: number
@@ -26,11 +26,9 @@ interface AuctionTableProps {
 const AuctionDashboard = () => {
   const router = useRouter();
 
-  const searchParams = useSearchParams();
 
-  const user = searchParams?.get('username'); // JohnDoe
+  const user = getUsername()
 
-  const appendedUrl = '?username=' + user;
   // Dummy data for different auction categories
 
   const [auctionData, setAuctionData] = useState<Record<string, Auction[]>>({
@@ -58,7 +56,8 @@ const AuctionDashboard = () => {
 
   const publishAuction = async (auction_id: number) => {
     const payload = JSON.stringify({
-      auctionId: auction_id
+      auctionId: auction_id,
+      token: `Bearer ${getToken()}`
     });
 
     console.log(auction_id)
@@ -74,7 +73,7 @@ const AuctionDashboard = () => {
       }
       console.log(response)
       if (status === 418) {
-        router.push('/login')
+        //router.push('/login')
       }
     }
     catch (error) {
