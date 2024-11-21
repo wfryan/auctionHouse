@@ -30,5 +30,18 @@ export const getUsername = () => {
         }
 
     }
+}
 
+export const getAccountType = () => {
+
+    let token = getToken();
+    if (token) {
+        let decodedToken = decodeToken(token);
+        if (decodedToken) {
+            return decodedToken.account_type;
+        } else {
+            return null;
+        }
+
+    }
 }

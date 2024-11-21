@@ -42,11 +42,10 @@ const LoginPage = () => {
                 setDE("");
                 const accountType = response.data.body.type;
                 saveToken(response.data.body.token);
-                const appendedUrl = '?username=' + username;
                 if (accountType == "buyer") {
-                    router.push('/search' + appendedUrl);
+                    router.push('/search');
                 } else if (accountType == "seller") {
-                    router.push('/auction_dashboard' + appendedUrl);
+                    router.push('/auction_dashboard');
                 } else if (accountType == "admin") {
 
                 }
