@@ -1,6 +1,8 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import axios from "axios";
+import EditAuction from '../../components/EditAuction'
+
 const instance = axios.create({
   baseURL: "https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse"
 })
@@ -8,10 +10,19 @@ const instance = axios.create({
 class Auction{
   auction_id: number
   item_name: string
+  item_starting_price: number
+  item_start_time: string
+  item_end_time:string
+  item_information: string
 
-  constructor(aid:number, name:string){
+
+  constructor(aid:number, name:string, starting_bid:number, start_time:string, end_time:string, info:string){
     this.auction_id=aid;
     this.item_name=name;
+    this.item_starting_price = starting_bid;
+    this.item_start_time=start_time;
+    this.item_end_time=end_time;
+    this.item_information=info;
   }
 }
 
@@ -41,6 +52,12 @@ const AuctionDashboard = () => {
     frozen: []
   });
 
+  //State to track the auction being edited
+  const [editingAuctionId, setEditingAuctionId] = useState<number | null>(null); 
+
+  const toggleEditForm = (auctionId: number) => {
+    setEditingAuctionId((current) => (current === auctionId ? null : auctionId));
+  };
 
   //Handler for routing the user to the profile page
   const handleProfileClick = () => {
@@ -91,9 +108,13 @@ const AuctionDashboard = () => {
         const processedData: Record<string, Auction[]> = {};
 
         Object.keys(auctionData).forEach(key => {
-          processedData[key] = auctionData[key].map((item: { auction_id: number, item_name: string }) => ({
+          processedData[key] = auctionData[key].map((item: { auction_id: number, item_name: string, item_starting_price: number, item_start_time:string, item_end_time:string, item_information:string }) => ({
             auction_id: item.auction_id,
-            item_name: item.item_name
+            item_name: item.item_name,
+            item_starting_price: item.item_starting_price,
+            item_start_time: item.item_start_time,
+            item_end_time: item.item_end_time,
+            item_information: item.item_information
           }));        });
         console.log(processedData)
         console.log("got here")
@@ -116,6 +137,49 @@ const AuctionDashboard = () => {
     getAuctionInfo();
   }, []);
 
+  // Format the start and end times to match the input type "datetime-local"
+  const formatDateTime = (dateTime: string) => {
+    const utcDate = new Date(dateTime); // Parse the UTC timestamp
+    const year = utcDate.getUTCFullYear();
+    const month = String(utcDate.getUTCMonth() + 1).padStart(2, '0'); // Month is zero-indexed
+    const day = String(utcDate.getUTCDate()).padStart(2, '0');
+    const hours = String(utcDate.getUTCHours()).padStart(2, '0');
+    const minutes = String(utcDate.getUTCMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  //Handler for Edit Auction Submission
+  const handleEditSubmit = async(editedAuction: Auction, getAuctionInfo: () => void) => {
+    try {
+      const payload = JSON.stringify({
+        "username" : user,
+        "auctionId" : editedAuction.auction_id,
+        "itemName" : editedAuction.item_name,
+        "itemDescription" : editedAuction.item_information,
+        "startingPrice" : editedAuction.item_starting_price,
+        "startTime" : editedAuction.item_start_time,
+        "endTime" : editedAuction.item_end_time
+      });
+
+      console.log(payload);
+      const response = await axios.post('https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/auction/editAuctions', payload);
+      let status = response.data.statusCode;
+      console.log(response);
+
+      if (status === 200) {
+        console.log("Auction Updated Successfully!");
+        getAuctionInfo();
+      } else {
+        console.log("Failed to update auction.");
+        alert("Auction could not be updated.");
+      }
+    } catch (error) {
+      console.log("Error Submitting the form: ", error);
+      alert('There was an error updating the auction. Please try again.');
+    }
+  };
+
   // Component for individual auction table
   const AuctionTable: React.FC<AuctionTableProps> = ({ title, items, isInactive }) => (
     <div className="mb-6">
@@ -125,19 +189,54 @@ const AuctionDashboard = () => {
       <div className="border border-gray-300 rounded-b-md">
         {items.length > 0 ? (
           items.map((item, index) => (
-            <div key={index} className="p-4 border-b last:border-b-0 flex justify-between items-center">
-              <span>{item.item_name}</span>
-              {isInactive && (
-                <div className="space-x-2">
-                  <button onClick={()=>publishAuction(item.auction_id)}className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300">
-                    Publish
-                  </button>
-                  <button className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300">
-                    Edit
-                  </button>
-                  <button className="px-3 py-1 text-sm border border-black rounded hover:bg-red-500 hover:text-white hover:border-red-500">
-                    Remove
-                  </button>
+            <div key={index} className="border-b last:border-b-0">
+              {/* Auction item row */}
+              <div className="p-4 flex justify-between items-center">
+                <span>{item.item_name}</span>
+                {isInactive && (
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => publishAuction(item.auction_id)}
+                      className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
+                    >
+                      Publish
+                    </button>
+                    <button
+                      onClick={() => toggleEditForm(item.auction_id)}
+                      className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
+                    >
+                      Edit
+                    </button>
+                    <button className="px-3 py-1 text-sm border border-black rounded hover:bg-red-500 hover:text-white hover:border-red-500">
+                      Remove
+                    </button>
+                  </div>
+                )}
+              </div>
+  
+              {/* Edit form */}
+              {editingAuctionId === item.auction_id && (
+                <div className="p-4 bg-black-50">
+                  <EditAuction
+                    auctionId={item.auction_id}
+                    itemName={item.item_name}
+                    startingPrice={item.item_starting_price} // Replace with actual data
+                    startTime={formatDateTime(item.item_start_time)} // Replace with actual data
+                    endTime={formatDateTime(item.item_end_time)} // Replace with actual data
+                    itemDescription={item.item_information}
+                    onCancel={() => setEditingAuctionId(null)} // Close the form
+                    onSubmit={(updatedAuction) => {
+                      const convertedAuction = new Auction(
+                        updatedAuction.auctionId,
+                        updatedAuction.itemName,
+                        updatedAuction.startingPrice,
+                        updatedAuction.startTime,
+                        updatedAuction.endTime,
+                        updatedAuction.itemDescription
+                      );
+
+                      handleEditSubmit(convertedAuction, getAuctionInfo)}}
+                  />
                 </div>
               )}
             </div>
