@@ -5,6 +5,7 @@ import AuctionItem from "@/app/entitites/AuctionItem"
 import { useRouter } from 'next/navigation'
 import { instance } from '../utils/auctionHouseApi';
 import { removeToken } from "../utils/cookie"
+import SignOutButton from "../components/SignoutButton"
 
 
 export default function Search() {
@@ -67,18 +68,13 @@ export default function Search() {
         router.push("/login")
     };
 
-    const handleSignout = () => {
-        removeToken();
-        router.push('/login')
-        //window.location.href = '/pages/seller_profile' + appendedUrl;
-    };
 
     return (
         <div>
             <div>
                 <br></br>
                 <button onClick={handleSignupClick}>Login/Sign up</button>
-                <button onClick={handleSignout}>Sign Out</button>
+                <SignOutButton/>
                 <br></br><br></br><br></br>
             </div>
             <input placeholder="Search..." ref={input} id="srchbar" /><button onClick={() => searchFunc()}>Search Items</button>

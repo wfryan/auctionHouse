@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { instance, header } from '../utils/auctionHouseApi';
 import { removeToken, getToken } from '../utils/cookie';
 import { decodeToken, getUsername } from '../utils/jwt';
+import SignOutButton from '../components/SignoutButton';
 
 class Auction {
   auction_id: number
@@ -52,12 +53,6 @@ const AuctionDashboard = () => {
   const handleCreateAuction = () => {
     router.push('/create_auction')
     //window.location.href = '/pages/create_auction' + appendedUrl;
-  };
-
-  const handleSignout = () => {
-    removeToken();
-    router.push('/login')
-    //window.location.href = '/pages/seller_profile' + appendedUrl;
   };
 
 
@@ -192,12 +187,7 @@ const AuctionDashboard = () => {
             >
               Create New Auction
             </button>
-            <button
-              onClick={handleSignout}
-              className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black"
-            >
-              Sign Out
-            </button>
+            <SignOutButton />
           </div>
         </div>
         <div className="space-y-6">
