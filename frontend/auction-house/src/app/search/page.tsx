@@ -10,7 +10,7 @@ export default function Search() {
     }
     const router = useRouter()
     const searchParams = useSearchParams()
-    const user = searchParams?.get("user")
+    const user = searchParams?.get("username")
     const [auctions, setAuctions] = useState<AuctionItem[]>([])
     const [dispError, setDispError] = useState(false)
     const input = useRef<HTMLInputElement>(null)
@@ -83,7 +83,7 @@ export default function Search() {
                 <br></br><br></br><br></br>
             </div>
             <input placeholder="Search..." ref={input} id="srchbar" /><button onClick={() => searchFunc()}>Search Items</button>
-            <button onClick = {() => {router.push(`/buyer_profile?username=${user}`)}}>{user}</button>
+            <button onClick={() => { router.push(`/buyer_profile?username=${user}`) }}>{user}</button>
             {
                 auctions.map(auction => {
                     return (
