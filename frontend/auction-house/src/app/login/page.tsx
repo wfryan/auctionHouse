@@ -95,7 +95,7 @@ const LoginPage = () => {
                     <div className="border border-gray-300 rounded-b-md p-4">
                         {/* Username */}
                         <div className="mb-4">
-                            <label htmlFor="user" className="block text-sm font-medium text-gray-700">Username</label>
+                            <label htmlFor="user" className="block text-sm font-medium text-white">Username</label>
                             <input
                                 name="user"
                                 id="user"
@@ -107,7 +107,7 @@ const LoginPage = () => {
 
                         {/* Password */}
                         <div className="mb-4">
-                            <label htmlFor="pass" className="block text-sm font-medium text-gray-700">Password</label>
+                            <label htmlFor="pass" className="block text-sm font-medium text-white">Password</label>
                             <input
                                 name="pass"
                                 id="pass"
