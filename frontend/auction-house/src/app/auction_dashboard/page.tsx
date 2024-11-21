@@ -54,6 +54,13 @@ const AuctionDashboard = () => {
     //window.location.href = '/pages/create_auction' + appendedUrl;
   };
 
+  const handleSignout = () => {
+    removeToken();
+    router.push('/login')
+    //window.location.href = '/pages/seller_profile' + appendedUrl;
+  };
+
+
   const publishAuction = async (auction_id: number) => {
     const payload = JSON.stringify({
       auctionId: auction_id,
@@ -184,6 +191,12 @@ const AuctionDashboard = () => {
               className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black"
             >
               Create New Auction
+            </button>
+            <button
+              onClick={handleSignout}
+              className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black"
+            >
+              Sign Out
             </button>
           </div>
         </div>
