@@ -3,12 +3,15 @@ import { useState, useRef } from "react"
 import AuctionItemClickable from "@/app/components/AuctionItemClickable"
 import AuctionItem from "@/app/entitites/AuctionItem"
 import { useRouter } from 'next/navigation'
+import instance from '../utils/auctionHouseApi';
+
+
 export default function Search() {
     interface ImageResponse {
         data: number[],
         type: string
     }
-    
+
     const router = useRouter()
     const [auctions, setAuctions] = useState<AuctionItem[]>([])
     const [dispError, setDispError] = useState(false)
@@ -22,21 +25,13 @@ export default function Search() {
                 search: input.current.value
             }
 
-            const resp = await fetch("https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/items/searchItems", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(body)
-            })
 
-            const awaitResp = await resp
-            const jsonResp = await awaitResp.json()
-            console.log(jsonResp)
+            const resp = await instance.post("items/searchItems", JSON.stringify(body));
+
             const tmpArray: AuctionItem[] = []
             let curItem;
-            for (let i = 0; i < jsonResp.body.items.length; i++) {
-                curItem = jsonResp.body.items[i]
+            for (let i = 0; i < resp.data.body.items.length; i++) {
+                curItem = resp.data.body.items[i]
                 tmpArray.push(new AuctionItem(curItem.auction_item_id, curItem.item_name, curItem.information == null ? "" : curItem.information, curItem.picture == null ? "" : curItem.picture))
             }
             //set auctions

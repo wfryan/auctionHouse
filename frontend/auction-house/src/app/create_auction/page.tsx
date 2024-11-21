@@ -1,11 +1,7 @@
 'use client';
 import React, { useState, ChangeEvent, Suspense } from 'react';
-
-import axios from "axios";
 import { useRouter, useSearchParams } from 'next/navigation';
-const instance = axios.create({
-  baseURL: "https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse"
-})
+import instance from '../utils/auctionHouseApi';
 
 const CreateAuctionForm = () => {
   //State Declaration for Form Data

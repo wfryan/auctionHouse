@@ -2,10 +2,8 @@
 import { useState } from "react"
 import { useRouter } from 'next/navigation';
 
-import axios from "axios";
-const instance = axios.create({
-    baseURL: "https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse"
-})
+import instance from '../utils/auctionHouseApi';
+import { saveToken } from "../utils/cookie";
 
 
 const LoginPage = () => {
@@ -43,6 +41,7 @@ const LoginPage = () => {
                 console.log(response.data);
                 setDE("");
                 const accountType = response.data.body.type;
+                saveToken(response.data.body.token);
                 const appendedUrl = '?username=' + username;
                 if (accountType == "buyer") {
                     router.push('/search' + appendedUrl);

@@ -1,6 +1,12 @@
 'use client'
+import axios from "axios"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+
+const instance = axios.create({
+    baseURL: "https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse"
+})
+
 export default function Signup() {
     const [adSelected, setAdSelected] = useState(false)
     const [displayError, setDE] = useState(false)
@@ -18,26 +24,18 @@ export default function Signup() {
             type: type,
             location: location
         }
-        
+
         console.log(body)
 
         try {
             if (username == "" || password == "") {
                 throw (new Error("error"))
             }
-            const resp = fetch("https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/users/create", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(body)
-            })
 
-            const awaitResp = await resp
-            const jsonResp = await awaitResp.json()
-            console.log(jsonResp)
+            const resp = await instance.post("users/create", JSON.stringify(body));
 
-            if (jsonResp.statusCode == 200) {
+
+            if (resp.data.statusCode == 200) {
                 //const user = new User(jsonResp.body.userId, username, parseInt(age), location, type, 0)
                 router.push('/login')
             }

@@ -1,10 +1,9 @@
 'use client';
 import React, { Suspense, useEffect, useState } from 'react';
-import axios from "axios";
 import { useRouter, useSearchParams } from 'next/navigation';
-const instance = axios.create({
-  baseURL: "https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse"
-})
+import instance from '../utils/auctionHouseApi';
+import { removeToken, getToken } from '../utils/cookie';
+import { decodeToken } from '../utils/jwt';
 
 class Auction {
   auction_id: number
@@ -47,13 +46,13 @@ const AuctionDashboard = () => {
 
   //Handler for routing the user to the profile page
   const handleProfileClick = () => {
-    router.push('/seller_profile' + appendedUrl)
+    router.push('/seller_profile')
     //window.location.href = '/pages/seller_profile' + appendedUrl;
   };
 
   //Handler for routing the user to the profile page
   const handleCreateAuction = () => {
-    router.push('/create_auction' + appendedUrl)
+    router.push('/create_auction')
     //window.location.href = '/pages/create_auction' + appendedUrl;
   };
 
@@ -67,10 +66,16 @@ const AuctionDashboard = () => {
       const response = await instance.post('/auction/publish', payload);
       const status = response.data.statusCode;
 
+
+
+
       if (status === 200) {
         getAuctionInfo();
       }
       console.log(response)
+      if (status === 418) {
+        router.push('/login')
+      }
     }
     catch (error) {
       console.log(error)
@@ -80,6 +85,14 @@ const AuctionDashboard = () => {
   };
 
   const getAuctionInfo = async () => {
+
+    console.log(getToken())
+
+    let tkn = getToken();
+    if (tkn !== null) {
+      console.log(decodeToken(tkn))
+    }
+
     const functionInput = JSON.stringify({
       username: user
     });
