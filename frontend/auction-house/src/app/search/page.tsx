@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react"
 import AuctionItemClickable from "@/app/components/AuctionItemClickable"
 import AuctionItem from "@/app/entitites/AuctionItem"
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { instance } from '../utils/auctionHouseApi';
 import { removeToken } from "../utils/cookie"
 import SignOutButton from "../components/SignoutButton"

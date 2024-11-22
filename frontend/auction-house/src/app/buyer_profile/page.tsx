@@ -1,6 +1,8 @@
 'use client'
 import { useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react"
+import { instance } from "../utils/auctionHouseApi"
+import { getToken } from "../utils/cookie"
 
 export default function BuyerProfile(){
     const router = useRouter()
@@ -11,17 +13,18 @@ export default function BuyerProfile(){
     const [balance, setBalance] = useState(localStorage.getItem("userBal"))
 
     const addToBalance = async () => {
+
+      const payload = JSON.stringify({
+        username: user,
+        addFunds: parseInt((document.getElementById("addInput") as HTMLInputElement).value),
+        token: `Bearer ${getToken()}`
+      });
+
       try{
-        const resp = await fetch("https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/users/addFunds", {
-          method: "POST",
-          body: JSON.stringify({
-            username: user,
-            addFunds: parseInt((document.getElementById("addInput") as HTMLInputElement).value)
-          })
-        })
-        const respJson = await resp.json()
-        console.log(respJson)
-        setBalance(respJson.body.curFunds)
+
+        const resp = await instance.post('users/addFunds', payload);
+        
+        setBalance(resp.data.curFunds);
       } catch(error){
         console.log(error)
       }

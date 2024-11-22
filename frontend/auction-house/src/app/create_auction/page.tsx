@@ -16,13 +16,7 @@ const CreateAuctionForm = () => {
   });
 
   const router = useRouter()
-  const searchParams = useSearchParams();
-
-  const user = searchParams?.get('username'); // JohnDoe
-
-  const appendedUrl = '?username=' + user;
-  const username = user;
-
+ 
   const [imagePreview, setImagePreview] = useState<string>('');
   const [priceError, setPriceError] = useState<string>('');
 
