@@ -38,7 +38,6 @@ export default function Signup() {
             console.log(jsonResp)
 
             if (jsonResp.statusCode == 200) {
-                //const user = new User(jsonResp.body.userId, username, parseInt(age), location, type, 0)
                 router.push('/login')
             }
             else {
