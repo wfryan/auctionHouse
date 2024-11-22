@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react"
 import AuctionItemClickable from "@/app/components/AuctionItemClickable"
 import AuctionItem from "@/app/entitites/AuctionItem"
 import { useRouter, useSearchParams } from 'next/navigation'
+import StatDisplay from "../components/StatDisplay"
 export default function Search() {
     interface ImageResponse {
         data: number[],
@@ -58,6 +59,7 @@ export default function Search() {
         localStorage.setItem("name", itemName)
         localStorage.setItem("info", itemInfo)
 
+        /**TODO: remove when images on s3 bucket */
         const reader = new FileReader()
         const dataArray = new Uint8Array(itemPic.data)
         const blob = new Blob([dataArray], { type: "application/octet-stream" })
@@ -67,8 +69,9 @@ export default function Search() {
             }
         }
         reader.readAsDataURL(blob)
+        /**END REMOVAL TODO */
         console.log("page: " + localStorage.getItem("img"))
-        router.push("/item")
+        router.push("/auction_page?username=" + user)
     }
 
     const handleSignupClick = () => {
@@ -77,6 +80,7 @@ export default function Search() {
 
     return (
         <div>
+            <StatDisplay />
             <div>
                 <br></br>
                 <button onClick={handleSignupClick}>Login/Sign up</button>
