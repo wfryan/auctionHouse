@@ -87,6 +87,7 @@ export default function Search() {
                 <br></br><br></br><br></br>
             </div>
             <input placeholder="Search..." ref={input} id="srchbar" /><button onClick={() => searchFunc()}>Search Items</button>
+            <button onClick={() => { router.push(`/buyer_profile?username=${user}`) }}>{user}</button>
             {
                 auctions.map(auction => {
                     return (
