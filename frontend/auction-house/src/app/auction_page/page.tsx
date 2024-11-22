@@ -5,15 +5,19 @@ import StatDisplay from "../components/StatDisplay"
 import { useRouter, useSearchParams } from "next/navigation"
 
 export interface Bid{ //export needed in BidDisplay
-    userID: number,
-    username: string,
+    bid_id: number,
+    auction_id: number,
+    buyer_id: number,
     amount: number,
-    bidTime: Date
+    bidTime: Date,
+    username: string,
 }
 
 export default function AuctionPage() {
     interface Auction{
         auction_id: number
+        item_name: string
+        information: string
         seller_id: number
         starting_bid: number
         highest_bid: number //id of highest bid
@@ -26,6 +30,7 @@ export default function AuctionPage() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const user = searchParams?.get("username")
+    const [userData, setUserData] = useState({balance: 0})
     const [auction, setAuction] = useState<Auction | null>(null)
     const [bids, setBids] = useState<Bid[]>([])
     const [dispError, setDispError] = useState(false) //error unused atm
@@ -44,12 +49,21 @@ export default function AuctionPage() {
         const hours = now.getHours().toString().padStart(2, '0')
         const minutes = now.getMinutes().toString().padStart(2, '0')
         const seconds = now.getSeconds().toString().padStart(2, '0')
-        const formattedDateTime = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`
+        const formattedDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
         return formattedDateTime
     }
 
-    const returnAuctionJSON = (auction_id: number, seller_id: number, starting_bid: number, highest_bid: number, status: string, start_time: Date, end_time: Date, winner_id: number) => {
-        return {auction_id: auction_id, seller_id: seller_id, starting_bid: starting_bid, highest_bid: highest_bid, status: status, start_time: start_time, end_time: end_time, winner_id: winner_id}
+    const fetchUserData = async () => {
+        const resp = await fetch("https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/users/viewUserFunds", {
+            method: "POST",
+            body: JSON.stringify({
+                username: user
+            })
+        })
+
+        const respJson = await resp.json()
+        console.log(respJson)
+        setUserData(respJson.body.user)
     }
     
     const fetchData = async () => {
@@ -58,7 +72,7 @@ export default function AuctionPage() {
             const body = {
                 id: localStorage.getItem("id")
             }
-            const resp = await fetch("https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/items/viewItem", { //TODO: lambda function should also now grab all currently placed bids referring to this auction's id and send back an array of related bids
+            const resp = await fetch("https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/items/viewItem", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -71,7 +85,7 @@ export default function AuctionPage() {
             const jsonAuctionBids = awaitRespJson.body.bids
             console.log(jsonItemResp)
             console.log(jsonAuctionBids)
-            setAuction(returnAuctionJSON(jsonItemResp.auction_id, jsonItemResp.seller_id, jsonItemResp.starting_bid, jsonItemResp.highest_bid, jsonItemResp.status, jsonItemResp.start_time, jsonItemResp.end_time, NaN))
+            setAuction(jsonItemResp)
             setBids(jsonAuctionBids)
             displayImage((document.getElementById("itemImg") as HTMLImageElement))
         } catch (error) {
@@ -82,7 +96,7 @@ export default function AuctionPage() {
     }
 
     useEffect(() => {
-        console.log(localStorage.getItem("id"))
+        fetchUserData()
         fetchData()
     }, [])
 
@@ -98,9 +112,9 @@ export default function AuctionPage() {
                 method: "POST",
                 body: JSON.stringify({
                     amount: bidValue,
-                    auction_id: 1,
-                    buyer_id: localStorage.getItem("userId"),
-                    time: formatTime()
+                    auction_id: auction?.auction_id,
+                    buyer_id: userData.balance,
+                    bidTime: formatTime()
                 })
             })
         }
@@ -111,15 +125,15 @@ export default function AuctionPage() {
 
     return (
         <div>
-            <StatDisplay></StatDisplay>
+            <StatDisplay bal = {userData.balance}></StatDisplay>
             {auction == null &&
                 <div />
             }
             {auction != null &&
                 <div>
                     <p>auction id: {auction.auction_id}</p>
-                    <p>item name: {localStorage.getItem("name")}</p>
-                    <p>item info: {localStorage.getItem("info")}</p>
+                    <p>item name: {auction.item_name}</p>
+                    <p>information: {auction.information}</p>
                     <p>item id: {localStorage.getItem("id")}</p>
                     <p>seller id: {auction.seller_id}</p>
                     <p>winner id: {auction.winner_id}</p>
@@ -132,7 +146,7 @@ export default function AuctionPage() {
                     <div>
                         {/**TODO: for onkeyup, make sure user cannot enter something less than highest bid*/}
                         <input id = "bidInput" placeholder="Enter a bid..." onKeyUp={() => {}} type = "number" className="rounded-md w-32 [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-1 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-1 [&::-webkit-outer-spin-button]:appearance-none text-end"></input>
-                        <button onClick={() => placeBidFunction()} className = "border border-gray-100">Place Bid</button>
+                        <button onClick={() => placeBidFunction()} className = "border border-gray-100">Place Bid</button> {/**TODO: in lambda, make sure user cannot go below their balance and cannot outbid themselves*/}
                     </div>
                     <div>
                         <p>Bids</p>

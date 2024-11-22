@@ -17,10 +17,8 @@ export default function Signup() {
             age: age,
             type: type,
             location: location
-        }
-        
+        } 
         console.log(body)
-
         try {
             if (username == "" || password == "") {
                 throw (new Error("error"))

@@ -1,14 +1,15 @@
 'use client'
 import { useRouter, useSearchParams } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 export default function BuyerProfile(){
     const router = useRouter()
     const searchParams = useSearchParams()
     const user = searchParams?.get('username'); // JohnDoe
+    const [userInfo, setUserInfo] = useState({description: "", location: "", age: 0})
     console.log(user)
     const appendedUrl = '?username=' + user;
-    const [balance, setBalance] = useState(localStorage.getItem("userBal"))
+    const [balance, setBalance] = useState(0)
 
     const addToBalance = async () => {
       try{
@@ -35,6 +36,21 @@ export default function BuyerProfile(){
         (document.getElementById("addInput") as HTMLInputElement).value = "999999999999"
        }
     }
+
+    useEffect(() => {
+      pullUserInfo()
+  }, [])
+
+    const pullUserInfo = async () => {
+      const resp = await fetch("https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/users/viewUserFunds", {
+        method: "POST",
+        body: JSON.stringify({username: user})
+      })
+      const jsonResp = await resp.json()
+      console.log(jsonResp.body)
+      setUserInfo(jsonResp.body.user)
+      setBalance(jsonResp.body.user.balance)
+    }
     
     return(
         <div className="p-4 md:p-5 font-sans max-w-7xl mx-auto">
@@ -59,23 +75,23 @@ export default function BuyerProfile(){
             </div>
 
             <div className="bg-gray-100 p-3 rounded-md min-h-16 text-black">
-              {`${localStorage.getItem("userDescription")}`}
+              {`${userInfo.description}`}
             </div>
 
             <div className="flex justify-between bg-gray-100 p-3 rounded-md text-black">
               {`Balance: $${balance}`}
               <div className="px-20">
-                <input  id = "addInput" onKeyUp={() => checkAddition()} defaultValue={1} type = "number" className="rounded-md w-32 [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-1 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-1 [&::-webkit-outer-spin-button]:appearance-none text-end"></input>
+                <input className="rounded-md w-32 [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-1 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-1 [&::-webkit-outer-spin-button]:appearance-none text-end" id = "addInput" onKeyUp={() => checkAddition()} defaultValue={1} type = "number"></input>
                 <button className="hover:bg-green-100 px-1 border-2 border-black rounded-md mx-1" onClick={() => addToBalance()}>Add Funds</button>
               </div>
             </div>
 
             <div className="bg-gray-100 p-3 rounded-md min-h-16 text-black">
-              {`Location: ${localStorage.getItem("userLocation")}`}
+              {`Location: ${userInfo.location}`}
             </div>
 
             <div className="bg-gray-100 p-3 rounded-md min-h-16 text-black">
-              {`Age: ${localStorage.getItem("userAge")}`}
+              {`Age: ${userInfo.age}`}
             </div>
           </div>
 
