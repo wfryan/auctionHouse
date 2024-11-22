@@ -12,6 +12,7 @@ export default function ItemPage() {
         }
     }
 
+    /**Get rid of useEffect when images on s3 bucket*/
     useEffect(() => {
         console.log(localStorage.getItem("id"))
         const fetchData = async () => {
