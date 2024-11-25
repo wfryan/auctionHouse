@@ -3,8 +3,10 @@ import { useEffect, useState } from "react"
 import BidDisplay from "../components/BidDisplay"
 import StatDisplay from "../components/StatDisplay"
 import { useRouter, useSearchParams } from "next/navigation"
+import { getUsername } from "../utils/jwt"
+import BuyerInfo from "../components/BuyerInfo"
 
-export interface Bid{ //export needed in BidDisplay
+export interface Bid { //export needed in BidDisplay
     bid_id: number,
     auction_id: number,
     buyer_id: number,
@@ -14,7 +16,7 @@ export interface Bid{ //export needed in BidDisplay
 }
 
 export default function AuctionPage() {
-    interface Auction{
+    interface Auction {
         auction_id: number
         item_name: string
         information: string
@@ -28,9 +30,6 @@ export default function AuctionPage() {
     }
 
     const router = useRouter()
-    const searchParams = useSearchParams()
-    const user = searchParams?.get("username")
-    const [userData, setUserData] = useState({balance: 0})
     const [auction, setAuction] = useState<Auction | null>(null)
     const [bids, setBids] = useState<Bid[]>([])
     const [dispError, setDispError] = useState(false) //error unused atm
@@ -40,7 +39,7 @@ export default function AuctionPage() {
             imgElement.src = dataUrl
         }
     }
-    
+
     const formatTime = () => {
         const now = new Date()
         const year = now.getFullYear()
@@ -53,19 +52,6 @@ export default function AuctionPage() {
         return formattedDateTime
     }
 
-    const fetchUserData = async () => {
-        const resp = await fetch("https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/users/viewUserFunds", {
-            method: "POST",
-            body: JSON.stringify({
-                username: user
-            })
-        })
-
-        const respJson = await resp.json()
-        console.log(respJson)
-        setUserData(respJson.body.user)
-    }
-    
     const fetchData = async () => {
         try {
             console.log(localStorage.getItem("id"))
@@ -96,16 +82,18 @@ export default function AuctionPage() {
     }
 
     useEffect(() => {
-        fetchUserData()
         fetchData()
     }, [])
+
+
+
 
     /**TODO: ?: page should refresh every 30 seconds or so correct? to refresh bids. */
 
     const placeBidFunction = async () => {
         const bidValue = (document.getElementById("bidInput") as HTMLInputElement).value
-        try{
-            if(bidValue == "" || parseInt(bidValue) < bids[0].amount){ //TODO: make sure bids list is ordered in lambda by price with highest at front of list
+        try {
+            if (bidValue == "" || parseInt(bidValue) < bids[0].amount) { //TODO: make sure bids list is ordered in lambda by price with highest at front of list
                 throw new Error("there was an error")
             }
             const resp = await fetch("", {
@@ -118,14 +106,14 @@ export default function AuctionPage() {
                 })
             })
         }
-        catch(error){
+        catch (error) {
             console.log(error)
         }
     }
 
     return (
         <div>
-            <StatDisplay bal = {userData.balance}></StatDisplay>
+            <BuyerInfo />
             {auction == null &&
                 <div />
             }
@@ -145,14 +133,14 @@ export default function AuctionPage() {
                     <img id="itemImg"></img>
                     <div>
                         {/**TODO: for onkeyup, make sure user cannot enter something less than highest bid*/}
-                        <input id = "bidInput" placeholder="Enter a bid..." onKeyUp={() => {}} type = "number" className="rounded-md w-32 [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-1 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-1 [&::-webkit-outer-spin-button]:appearance-none text-end"></input>
-                        <button onClick={() => placeBidFunction()} className = "border border-gray-100">Place Bid</button> {/**TODO: in lambda, make sure user cannot go below their balance and cannot outbid themselves*/}
+                        <input id="bidInput" placeholder="Enter a bid..." onKeyUp={() => { }} type="number" className="rounded-md w-32 [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-1 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-1 [&::-webkit-outer-spin-button]:appearance-none text-end"></input>
+                        <button onClick={() => placeBidFunction()} className="border border-gray-100">Place Bid</button> {/**TODO: in lambda, make sure user cannot go below their balance and cannot outbid themselves*/}
                     </div>
                     <div>
                         <p>Bids</p>
                         {bids.map((bid, index) => {
-                            return(
-                                <BidDisplay key = {index} bid = {bid}></BidDisplay> //easier to just give entire bid instead of fields separately
+                            return (
+                                <BidDisplay key={index} bid={bid}></BidDisplay> //easier to just give entire bid instead of fields separately
                             )
                         })}
                     </div>

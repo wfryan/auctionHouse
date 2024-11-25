@@ -1,16 +1,15 @@
 'use client'
 import { useRouter, useSearchParams } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { instance } from "../utils/auctionHouseApi"
 import { getToken } from "../utils/cookie"
+import { getUsername } from "../utils/jwt"
 
 export default function BuyerProfile() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const user = searchParams?.get('username'); // JohnDoe
+  let user = getUsername();
+  const [username, setUsername] = useState(null)
   const [userInfo, setUserInfo] = useState({ description: "", location: "", age: 0 })
-  console.log(user)
-  const appendedUrl = '?username=' + user;
   const [balance, setBalance] = useState(0)
 
   const addToBalance = async () => {
@@ -25,7 +24,7 @@ export default function BuyerProfile() {
 
       const resp = await instance.post('users/addFunds', payload);
 
-      setBalance(resp.data.curFunds);
+      setBalance(resp.data.body.curFunds);
     } catch (error) {
       console.log(error)
     }
@@ -41,19 +40,21 @@ export default function BuyerProfile() {
   }
 
   useEffect(() => {
+    setUsername(user)
     pullUserInfo()
   }, [])
 
+  const body = JSON.stringify({ username: user })
   const pullUserInfo = async () => {
-    const resp = await fetch("https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/users/viewUserFunds", {
-      method: "POST",
-      body: JSON.stringify({ username: user })
-    })
-    const jsonResp = await resp.json()
-    console.log(jsonResp.body)
-    setUserInfo(jsonResp.body.user)
-    setBalance(jsonResp.body.user.balance)
+    const resp = await instance.post('/users/viewUserFunds', body);
+    console.log(resp);
+    setUserInfo(resp.data.body.user)
+    setBalance(resp.data.body.user.balance)
   }
+
+  const handleBackButton = () => {
+    router.push('/search')
+  };
 
   return (
     <div className="p-4 md:p-5 font-sans max-w-7xl mx-auto">
@@ -65,7 +66,7 @@ export default function BuyerProfile() {
 
       <div className="border border-gray-300 rounded-lg p-4 md:p-5 bg-white">
         <button
-          onClick={() => { }}
+          onClick={handleBackButton}
           className="px-4 py-2 text-sm text-black border-2 border-black rounded-md mb-4 hover:bg-gray-100"
         >
           Back
@@ -74,7 +75,7 @@ export default function BuyerProfile() {
           {/* Left side - User Information */}
           <div className="w-full md:w-3/5 space-y-3">
             <div className="bg-gray-100 p-3 rounded-md text-black">
-              {"Name: " + user}
+              Name: {username}
             </div>
 
             <div className="bg-gray-100 p-3 rounded-md min-h-16 text-black">
