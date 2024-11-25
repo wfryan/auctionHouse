@@ -96,8 +96,16 @@ export default function AuctionPage() {
         console.log(auction?.auction_id)
         console.log(formatTime(new Date()))
         try{
-            if(bidValue == "" || parseInt(bidValue) < bids[0].amount){
-                throw new Error("there was an error")
+            console.log(bids)
+            if(bids.length == 0 && auction != null){
+                if(bidValue == "" || parseInt(bidValue) < auction?.starting_bid){
+                    throw new Error("there was an error")
+                }
+            }
+            else{
+                if(bidValue == "" || parseInt(bidValue) < bids[0].amount){
+                    throw new Error("there was an error")
+                }
             }
             const resp = await fetch("https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/auction/placeBid", {
                 method: "POST",
