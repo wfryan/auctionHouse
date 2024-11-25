@@ -155,10 +155,14 @@ const AuctionDashboard = () => {
   }, []);
 
   // Format the start and end times to match the input type "datetime-local"
+  // Additional functionality to handle instances where there is no start time or end time for auctions.
   const formatDateTime = (dateTime: string) => {
-    const utcDate = new Date(dateTime); // Parse the UTC timestamp
+    if (!dateTime) return '';
+    const utcDate = new Date(dateTime);
+    if (isNaN(utcDate.getTime()) || utcDate.getFullYear() <= 1970) return '';
+    
     const year = utcDate.getUTCFullYear();
-    const month = String(utcDate.getUTCMonth() + 1).padStart(2, '0'); // Month is zero-indexed
+    const month = String(utcDate.getUTCMonth() + 1).padStart(2, '0');
     const day = String(utcDate.getUTCDate()).padStart(2, '0');
     const hours = String(utcDate.getUTCHours()).padStart(2, '0');
     const minutes = String(utcDate.getUTCMinutes()).padStart(2, '0');
@@ -182,11 +186,11 @@ const AuctionDashboard = () => {
       console.log(payload);
       const response = await axios.post('https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/auction/editAuctions', payload);
       let status = response.data.statusCode;
-      console.log(response);
 
       if (status === 200) {
         console.log("Auction Updated Successfully!");
         getAuctionInfo();
+        alert("Auction Updated Succesfully!")
       } else {
         console.log("Failed to update auction.");
         alert("Auction could not be updated.");

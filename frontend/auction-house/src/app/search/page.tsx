@@ -1,27 +1,40 @@
 'use client'
 import { useState, useRef, useEffect } from "react"
 import AuctionItemClickable from "@/app/components/AuctionItemClickable"
-import AuctionItem from "@/app/entitites/AuctionItem"
 import { useRouter, useSearchParams } from 'next/navigation'
 import { instance } from '../utils/auctionHouseApi';
 import { removeToken } from "../utils/cookie"
 import SignOutButton from "../components/SignoutButton"
 
+import StatDisplay from "../components/StatDisplay"
+
+export interface AuctionItem {
+    auction_item_id: number
+    item_name: string
+    information: string
+}
 
 export default function Search() {
-    interface ImageResponse {
-        data: number[],
-        type: string
-    }
     const router = useRouter()
     const searchParams = useSearchParams()
     const user = searchParams?.get("username")
+    const [userInfo, setUserInfo] = useState({ balance: 0 })
     const [auctions, setAuctions] = useState<AuctionItem[]>([])
     const [dispError, setDispError] = useState(false)
     const input = useRef<HTMLInputElement>(null)
     useEffect(() => {
-        //*TODO: Paginate this page to load first 20 auctions on page load and get total number of pages*/
+        pullUserInfo()
     }, [])
+
+    const pullUserInfo = async () => {
+        const resp = await fetch("https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/users/viewUserFunds", {
+            method: "POST",
+            body: JSON.stringify({ username: user })
+        })
+        const jsonResp = await resp.json()
+        setUserInfo(jsonResp.body.user)
+    }
+
     const searchFunc = async () => {
         try {
             if (input.current == null) {
@@ -32,17 +45,11 @@ export default function Search() {
             }
 
 
-            const resp = await instance.post("items/searchItems", JSON.stringify(body));
 
-            const tmpArray: AuctionItem[] = []
-            let curItem;
-            for (let i = 0; i < resp.data.body.items.length; i++) {
-                curItem = resp.data.body.items[i]
-                tmpArray.push(new AuctionItem(curItem.auction_item_id, curItem.item_name, curItem.information == null ? "" : curItem.information, curItem.picture == null ? "" : curItem.picture))
-            }
-            //set auctions
-            console.log(tmpArray)
-            setAuctions(tmpArray)
+
+
+            const resp = await instance.post("items/searchItems", JSON.stringify(body));
+            setAuctions(resp.data.items)
         }
         catch (error) {
             setDispError(true)
@@ -50,22 +57,9 @@ export default function Search() {
         }
     }
 
-    const setStorage = async (itemId: number, itemName: string, itemInfo: string, itemPic: ImageResponse) => {
+    const setStorage = async (itemId: number) => {
         localStorage.setItem("id", itemId.toString())
-        localStorage.setItem("name", itemName)
-        localStorage.setItem("info", itemInfo)
-
-        const reader = new FileReader()
-        const dataArray = new Uint8Array(itemPic.data)
-        const blob = new Blob([dataArray], { type: "application/octet-stream" })
-        reader.onloadend = () => {
-            if (typeof reader.result == 'string') {
-                localStorage.setItem("img", reader.result)
-            }
-        }
-        reader.readAsDataURL(blob)
-        console.log("page: " + localStorage.getItem("img"))
-        router.push("/item")
+        router.push("/auction_page?username=" + user)
     }
 
     const handleSignupClick = () => {
@@ -75,20 +69,18 @@ export default function Search() {
 
     return (
         <div>
-            <div>
-                <br></br>
-                <button onClick={handleSignupClick}>Login/Sign up</button>
-                <SignOutButton/>
-                <br></br><br></br><br></br>
-            </div>
+            <StatDisplay bal={userInfo.balance}></StatDisplay>
+            <br></br>
+            <button onClick={handleSignupClick}>Login/Sign up</button>
+            <SignOutButton />
+            <br></br><br></br><br></br>
             <input placeholder="Search..." ref={input} id="srchbar" /><button onClick={() => searchFunc()}>Search Items</button>
-            <button onClick={() => { router.push(`/buyer_profile?username=${user}`) }}>{user}</button>
             {
-                auctions.map(auction => {
+                auctions.map(item => {
                     return (
-                        <div key={auction.getAIId()}>
-                            <div onClick={() => setStorage(auction.getAIId(), auction.getIN(), auction.getInfo(), auction.getPicture())}>
-                                <AuctionItemClickable aucItem={auction}></AuctionItemClickable>
+                        <div key={item.auction_item_id}>
+                            <div onClick={() => setStorage(item.auction_item_id)}>
+                                <AuctionItemClickable aucItem={item}></AuctionItemClickable>
                             </div>
                         </div>
 
