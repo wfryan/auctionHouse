@@ -5,19 +5,22 @@ import { instance, header } from '../utils/auctionHouseApi';
 import { removeToken, getToken } from '../utils/cookie';
 import { decodeToken, getUsername } from '../utils/jwt';
 import SignOutButton from '../components/SignoutButton';
+import ViewAuction from '../components/ViewAuction';
 
 class Auction {
   auction_id: number
   item_name: string
+  item_seller: string
   item_starting_price: number
   item_start_time: string
   item_end_time: string
   item_information: string
 
 
-  constructor(aid: number, name: string, starting_bid: number, start_time: string, end_time: string, info: string) {
+  constructor(aid: number, name: string, item_seller: string, starting_bid: number, start_time: string, end_time: string, info: string) {
     this.auction_id = aid;
     this.item_name = name;
+    this.item_seller = item_seller;
     this.item_starting_price = starting_bid;
     this.item_start_time = start_time;
     this.item_end_time = end_time;
@@ -52,23 +55,13 @@ const AuctionDashboard = () => {
   });
 
   //State to track the auction being edited
-  const [editingAuctionId, setEditingAuctionId] = useState<number | null>(null);
+  const [viewingAuctionId, setViewingAuctionId] = useState<number | null>(null);
 
-  const toggleEditForm = (auctionId: number) => {
-    setEditingAuctionId((current) => (current === auctionId ? null : auctionId));
+  const toggleViewForm = (auctionId: number) => {
+    setViewingAuctionId((current) => (current === auctionId ? null : auctionId));
   };
 
-  //Handler for routing the user to the profile page
-  const handleProfileClick = () => {
-    router.push('/seller_profile')
-    //window.location.href = '/pages/seller_profile' + appendedUrl;
-  };
 
-  //Handler for routing the user to the profile page
-  const handleCreateAuction = () => {
-    router.push('/create_auction')
-    //window.location.href = '/pages/create_auction' + appendedUrl;
-  };
 
 
   const publishAuction = async (auction_id: number) => {
@@ -125,19 +118,27 @@ const AuctionDashboard = () => {
         const processedData: Record<string, Auction[]> = {};
 
         Object.keys(auctionData).forEach(key => {
-          processedData[key] = auctionData[key].map((item: { auction_id: number, item_name: string, item_starting_price: number, item_start_time: string, item_end_time: string, item_information: string }) => ({
+          processedData[key] = auctionData[key].map((item: { 
+                                                        auction_id: number, 
+                                                        item_name: string, 
+                                                        item_seller_id: number,
+                                                        item_seller: string,
+                                                        item_starting_price: number,
+                                                        item_start_time: string, 
+                                                        item_end_time: string, 
+                                                        item_information: string }) => ({
             auction_id: item.auction_id,
             item_name: item.item_name,
+            item_seller: item.item_seller,
             item_starting_price: item.item_starting_price,
             item_start_time: item.item_start_time,
             item_end_time: item.item_end_time,
             item_information: item.item_information
           }));
         });
+        console.log("processed-data")
         console.log(processedData)
-        console.log("got here")
         setAuctionData(processedData);
-        console.log("got here?")
 
 
 
@@ -170,6 +171,12 @@ const AuctionDashboard = () => {
 
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
+
+  //Handler for freeze auction
+
+  const freezeAuction = async (user_id: number) => {
+    const payload = JSON.stringify({})
+  }
 
   //Handler for Edit Auction Submission
   const handleEditSubmit = async (editedAuction: Auction, getAuctionInfo: () => void) => {
@@ -214,51 +221,43 @@ const AuctionDashboard = () => {
             <div key={index} className="border-b last:border-b-0">
               {/* Auction item row */}
               <div className="p-4 flex justify-between items-center">
-                <span>{item.item_name}</span>
+                <div className="grid grid-cols-[150px_1fr] gap-4">
+                  <span className="whitespace-nowrap">{"User: " + item.item_seller}</span>
+                  <span className="whitespace-nowrap">{"Item: " + item.item_name}</span>
+                </div>
                 {isInactive && (
                   <div className="space-x-2">
                     <button
-                      onClick={() => publishAuction(item.auction_id)}
+                      onClick={() => toggleViewForm(item.auction_id)}
                       className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
                     >
-                      Publish
+                      View
                     </button>
-                    <button
-                      onClick={() => toggleEditForm(item.auction_id)}
-                      className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
+                    <button 
+                      onClick={() => toggleViewForm(item.auction_id)}
+                      className="px-3 py-1 text-sm border border-black rounded hover:bg-red-500 hover:text-white hover:border-red-500"
                     >
-                      Edit
-                    </button>
-                    <button className="px-3 py-1 text-sm border border-black rounded hover:bg-red-500 hover:text-white hover:border-red-500">
+                      
                       Remove
                     </button>
                   </div>
                 )}
+                
               </div>
 
               {/* Edit form */}
-              {editingAuctionId === item.auction_id && (
+              {viewingAuctionId === item.auction_id && (
                 <div className="p-4 bg-black-50">
-                  <EditAuction
+                  <ViewAuction
                     auctionId={item.auction_id}
+                    itemSeller={item.item_seller}
                     itemName={item.item_name}
                     startingPrice={item.item_starting_price} // Replace with actual data
                     startTime={formatDateTime(item.item_start_time)} // Replace with actual data
                     endTime={formatDateTime(item.item_end_time)} // Replace with actual data
                     itemDescription={item.item_information}
-                    onCancel={() => setEditingAuctionId(null)} // Close the form
-                    onSubmit={(updatedAuction) => {
-                      const convertedAuction = new Auction(
-                        updatedAuction.auctionId,
-                        updatedAuction.itemName,
-                        updatedAuction.startingPrice,
-                        updatedAuction.startTime,
-                        updatedAuction.endTime,
-                        updatedAuction.itemDescription
-                      );
-
-                      handleEditSubmit(convertedAuction, getAuctionInfo)
-                    }}
+                    onCancel={() => setViewingAuctionId(null)} // Close the form
+                    
                   />
                 </div>
               )}
@@ -277,18 +276,8 @@ const AuctionDashboard = () => {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl md:text-3xl font-bold">Admin Dashboard</h1>
           <div className="flex space-x-4">
-            <button
-              onClick={handleProfileClick}
-              className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black"
-            >
-              Profile
-            </button>
-            <button
-              onClick={handleCreateAuction}
-              className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black"
-            >
-              Create New Auction
-            </button>
+            
+            
             <SignOutButton />
           </div>
         </div>
