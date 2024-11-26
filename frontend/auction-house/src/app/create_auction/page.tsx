@@ -57,7 +57,9 @@ const CreateAuctionForm = () => {
   };
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+
     const file = e.target.files?.[0];
+
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
         alert('File size must be less than 2MB');
@@ -101,10 +103,7 @@ const CreateAuctionForm = () => {
     }
 
 
-    let base64data = null;
-    if (formData.image != null) {
-      base64data = await fileToBase64(formData.image);
-    }
+
 
     console.log(getUsername());
 
@@ -115,23 +114,40 @@ const CreateAuctionForm = () => {
       itemDescription: formData.itemDescription,
       startTime: formData.startTime,
       endTime: formData.endTime,
-      image: base64data
+      image: formData.image?.name
     });
 
     try {
-      const response = await instance.post('/auction/createAuction', functionInput);
-      const status = response.data.statusCode;
-      console.log(response);
+      //make auction and auction_item without item url
+      const createAuctionResponse = await instance.post('/auction/createAuction', functionInput);
+
+      if (createAuctionResponse && createAuctionResponse.data.imageAdded) {
+        let base64data = null;
+        console.log(formData.image);
+        if (formData.image != null) {
+          base64data = await fileToBase64(formData.image);
+        }
+        console.log(base64data);
+
+        const imageName = `${createAuctionResponse.data.auctionId}${formData.image?.name}`
+        const imageResponseBody = JSON.stringify({ fileContent: base64data, fileName: imageName /* send proper url to func */, fileType: "png" }); //change off hardcoding
+        const imageResponse = await instance.post('/items/uploadImage', imageResponseBody);
+
+        const uploadURLbody = JSON.stringify({ auctionItemId: createAuctionResponse.data.auctionId, imageURL: imageResponse.data.body.fileUrl })
+        const uploadURLResponse = await instance.post('/items/updateImageURL', uploadURLbody);
+      }
+      const status = createAuctionResponse.data.statusCode;
+      console.log(createAuctionResponse);
 
       if (status === 200) {
         //alert(response.data);
-        console.log(response.data);
+        console.log(createAuctionResponse.data);
         // Redirect only after a successful response
         router.push('/auction_dashboard')
         //window.location.href = '/pages/auction_dashboard' + appendedUrl;
       } else {
         // Handle any other status codes appropriately
-        alert('Error: ' + response.data.body); // Adjust based on your response structure
+        alert('Error: ' + createAuctionResponse.data.body); // Adjust based on your response structure
       }
     } catch (error) {
       console.log(error);
