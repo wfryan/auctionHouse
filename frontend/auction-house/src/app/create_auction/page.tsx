@@ -130,7 +130,7 @@ const CreateAuctionForm = () => {
         console.log(base64data);
 
         const imageName = `${createAuctionResponse.data.auctionId}${formData.image?.name}`
-        const imageResponseBody = JSON.stringify({ fileContent: base64data, fileName: imageName /* send proper url to func */, fileType: "png" }); //change off hardcoding
+        const imageResponseBody = JSON.stringify({ fileContent: base64data, fileName: imageName /* send proper url to func */, fileType: formData.image?.type }); //change off hardcoding
         const imageResponse = await instance.post('/items/uploadImage', imageResponseBody);
 
         const uploadURLbody = JSON.stringify({ auctionItemId: createAuctionResponse.data.auctionId, imageURL: imageResponse.data.body.fileUrl })
