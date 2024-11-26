@@ -76,15 +76,12 @@ const AuctionDashboard = () => {
   //Handler for routing the user to the profile page
   const handleProfileClick = () => {
     router.push('/seller_profile')
-    //window.location.href = '/pages/seller_profile' + appendedUrl;
   };
 
   //Handler for routing the user to the profile page
   const handleCreateAuction = () => {
     router.push('/create_auction')
-    //window.location.href = '/pages/create_auction' + appendedUrl;
   };
-
 
   const publishAuction = async (auction_id: number) => {
     const payload = JSON.stringify({
@@ -141,9 +138,6 @@ const AuctionDashboard = () => {
   };
 
   const getAuctionInfo = async () => {
-
-    console.log(getToken())
-
     let tkn = getToken();
     if (tkn !== null) {
       console.log(decodeToken(tkn))
