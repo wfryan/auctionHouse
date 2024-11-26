@@ -8,6 +8,7 @@ const instance = axios.create({
 })
 
 const CreateAuctionForm = () => {
+
   //State Declaration for Form Data
   const [formData, setFormData] = useState({
     itemName: '',
@@ -15,22 +16,17 @@ const CreateAuctionForm = () => {
     startingPrice: '',
     startTime: '',
     endTime: '',
+    auctionType: '',
     image: null as File | null
   });
 
   const router = useRouter()
-  const searchParams = useSearchParams();
-
-  const user = searchParams?.get('username'); // JohnDoe
-
-  const appendedUrl = '?username=' + user;
-  const username = user;
 
   const [imagePreview, setImagePreview] = useState<string>('');
   const [priceError, setPriceError] = useState<string>('');
 
   //Input Handler for Price
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement> | ChangeEvent<HTMLSelectElement>) => {
     console.log(formData.startTime)
     const { name, value } = e.target;
     if (name === 'startingPrice') {
@@ -65,7 +61,9 @@ const CreateAuctionForm = () => {
   };
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+
     const file = e.target.files?.[0];
+
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
         alert('File size must be less than 2MB');
@@ -109,10 +107,7 @@ const CreateAuctionForm = () => {
     }
 
 
-    let base64data = null;
-    if (formData.image != null) {
-      base64data = await fileToBase64(formData.image);
-    }
+
 
     const functionInput = JSON.stringify({
       username: username,
@@ -121,23 +116,40 @@ const CreateAuctionForm = () => {
       itemDescription: formData.itemDescription,
       startTime: formData.startTime,
       endTime: formData.endTime,
-      image: base64data
+      image: formData.image?.name
     });
 
     try {
-      const response = await instance.post('/auction/createAuction', functionInput);
-      const status = response.data.statusCode;
-      console.log(response);
+      //make auction and auction_item without item url
+      const createAuctionResponse = await instance.post('/auction/createAuction', functionInput);
+
+      if (createAuctionResponse && createAuctionResponse.data.imageAdded) {
+        let base64data = null;
+        console.log(formData.image);
+        if (formData.image != null) {
+          base64data = await fileToBase64(formData.image);
+        }
+        console.log(base64data);
+
+        const imageName = `${createAuctionResponse.data.auctionId}${formData.image?.name}`
+        const imageResponseBody = JSON.stringify({ fileContent: base64data, fileName: imageName /* send proper url to func */, fileType: formData.image?.type }); //change off hardcoding
+        const imageResponse = await instance.post('/items/uploadImage', imageResponseBody);
+
+        const uploadURLbody = JSON.stringify({ auctionItemId: createAuctionResponse.data.auctionId, imageURL: imageResponse.data.body.fileUrl })
+        const uploadURLResponse = await instance.post('/items/updateImageURL', uploadURLbody);
+      }
+      const status = createAuctionResponse.data.statusCode;
+      console.log(createAuctionResponse);
 
       if (status === 200) {
         //alert(response.data);
-        console.log(response.data);
+        console.log(createAuctionResponse.data);
         // Redirect only after a successful response
         router.push('/auction_dashboard' + appendedUrl)
         //window.location.href = '/pages/auction_dashboard' + appendedUrl;
       } else {
         // Handle any other status codes appropriately
-        alert('Error: ' + response.data.body); // Adjust based on your response structure
+        alert('Error: ' + createAuctionResponse.data.body); // Adjust based on your response structure
       }
     } catch (error) {
       console.log(error);
@@ -153,9 +165,6 @@ const CreateAuctionForm = () => {
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-center">
             Create New Auction
           </h1>
-          <div>
-            <h1>{user}</h1>
-          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
@@ -248,6 +257,22 @@ const CreateAuctionForm = () => {
                 onChange={handleInputChange}
                 rows={4}
               />
+              <label htmlFor="dropdown" className="block text-sm font-medium text-white-700 mt-4 mb-2">
+                Item Type
+              </label>
+              <select
+                id="dropdown"
+                name="auctionType"
+                className="w-full p-2 sm:p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-black"
+                value={formData.auctionType}
+                onChange={(e) => handleInputChange(e)}
+              >
+                <option value="" disabled>
+                  Choose an Auction Type
+                </option>
+                <option value="auction">Auction</option>
+                <option value="buyNow">Buy Now</option>
+              </select>
             </div>
 
             {/* Image Upload Field */}

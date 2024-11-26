@@ -7,6 +7,7 @@ interface EditAuctionFormProps {
   startTime: string;
   endTime: string;
   itemDescription?: string;
+  auctionType: string
   
   onCancel: () => void;
 
@@ -17,6 +18,7 @@ interface EditAuctionFormProps {
     startTime: string;
     endTime: string;
     itemDescription: string;
+    auctionType: string
   }) => void;
 }
 
@@ -27,6 +29,7 @@ const EditAuction: React.FC<EditAuctionFormProps> = ({
   startTime,
   endTime,
   itemDescription = '',
+  auctionType,
   onCancel,
   onSubmit,
 }) => {
@@ -36,6 +39,7 @@ const EditAuction: React.FC<EditAuctionFormProps> = ({
   const [updatedEndTime, setUpdatedEndTime] = useState(endTime);
   const [updatedExtraInfo, setUpdatedExtraInfo] = useState(itemDescription);
   const [priceError, setPriceError] = useState<string>('');
+  const [updatedAuctionType, setUpdatedAuctionType] = useState(auctionType)
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -51,6 +55,7 @@ const EditAuction: React.FC<EditAuctionFormProps> = ({
       startTime: updatedStartTime,
       endTime: updatedEndTime,
       itemDescription: updatedExtraInfo,
+      auctionType: updatedAuctionType
     });
   };
 
@@ -152,6 +157,22 @@ const EditAuction: React.FC<EditAuctionFormProps> = ({
             onChange={(e) => setUpdatedExtraInfo(e.target.value)}
             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm text-black"
           />
+      <label htmlFor="dropdown" className="block text-sm font-medium text-black">
+    Item Type
+  </label>
+  <select
+    id="dropdown"
+    name="auctionType"
+    className="w-full p-2 sm:p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-black"
+    value={updatedAuctionType}
+    onChange={(e) => setUpdatedAuctionType(e.target.value)}
+  >
+    <option value="" disabled>
+      Choose an Auction Type
+    </option>
+    <option value="auction">Auction</option>
+    <option value="buyNow">Buy Now</option>
+  </select>
         </div>
         <div className="flex space-x-4">
           <button

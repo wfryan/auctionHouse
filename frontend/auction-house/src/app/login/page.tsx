@@ -46,11 +46,11 @@ const LoginPage = () => {
                 const accountType = body.type;
                 const appendedUrl = '?username=' + username;
                 if (accountType == "buyer") {
-                    router.push('/search' + appendedUrl);
+                    router.push('/buyer_dashboard');
                 } else if (accountType == "seller") {
                     router.push('/auction_dashboard' + appendedUrl);
                 } else if (accountType == "admin") {
-
+                    router.push('/admin_dashboard');
                 }
             } else {
                 if (status === 404) {
