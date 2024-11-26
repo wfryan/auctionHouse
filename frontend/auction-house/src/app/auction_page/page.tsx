@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { getUsername } from "../utils/jwt"
 import { instance } from "../utils/auctionHouseApi"
 import BuyerInfo from "../components/BuyerInfo"
+import { instance } from "../utils/auctionHouseApi"
 import { getToken } from "../utils/cookie"
 
 export interface Bid { //export needed in BidDisplay
@@ -33,14 +34,32 @@ export default function AuctionPage() {
     }
 
     const router = useRouter()
+
+    const user = getUsername()
+
     const [auction, setAuction] = useState<Auction | null>(null)
     const [bids, setBids] = useState<Bid[]>([])
+    const [userData, setUserData] = useState({ username: "", balance: 0 })
     const [dispError, setDispError] = useState(false) //error unused atm
     const displayImage = (imgElement: HTMLImageElement) => {
         const dataUrl = localStorage.getItem("img")
         if (dataUrl) {
             imgElement.src = dataUrl
         }
+    }
+
+    const body = JSON.stringify({ username: user })
+
+    const pullUserInfo = async () => {
+        const resp = await instance.post('/users/viewUserFunds', body);
+        console.log(resp);
+
+        const userData = resp.data.body.user;
+        setUserData(prevState => ({
+            ...prevState,
+            username: getUsername(),
+            balance: userData.balance
+        }));
     }
 
     const formatTime = () => {
@@ -126,7 +145,7 @@ export default function AuctionPage() {
                 body: JSON.stringify({
                     amount: bidValue,
                     auction_id: auction?.auction_id,
-                    buyer_id: userData.balance,
+                    buyer_id: userData.balance, //todo 
                     bidTime: formatTime()
                 })
             })
