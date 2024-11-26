@@ -174,17 +174,19 @@ const AuctionDashboard = () => {
   // Additional functionality to handle instances where there is no start time or end time for auctions.
   const formatDateTime = (dateTime: string) => {
     if (!dateTime) return '';
-    const utcDate = new Date(dateTime);
-    if (isNaN(utcDate.getTime()) || utcDate.getFullYear() <= 1970) return '';
+    const localDate = new Date(dateTime); // This will automatically convert the UTC date to local time
+    
+    if (isNaN(localDate.getTime()) || localDate.getFullYear() <= 1970) return '';
 
-    const year = utcDate.getUTCFullYear();
-    const month = String(utcDate.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(utcDate.getUTCDate()).padStart(2, '0');
-    const hours = String(utcDate.getUTCHours()).padStart(2, '0');
-    const minutes = String(utcDate.getUTCMinutes()).padStart(2, '0');
+    const year = localDate.getFullYear();
+    const month = String(localDate.getMonth() + 1).padStart(2, '0');
+    const day = String(localDate.getDate()).padStart(2, '0');
+    const hours = String(localDate.getHours()).padStart(2, '0');
+    const minutes = String(localDate.getMinutes()).padStart(2, '0');
 
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
+
 
   //Handler for Edit Auction Submission
   const handleEditSubmit = async (editedAuction: Auction) => {
@@ -215,6 +217,34 @@ const AuctionDashboard = () => {
       console.log("Error Submitting the form: ", error);
       alert('There was an error updating the auction. Please try again.');
     }
+  };
+
+  //Handler for Request Unfreeze Submission
+  const handleRequestUnfreeze = async(auctionId: number, reason: string, timestamp: string) => {
+    try {
+      const payload = JSON.stringify({
+        "auctionId" : auctionId, 
+        "reason" : reason, 
+        "date" : timestamp, 
+        "token" : `Bearer ${getToken()}`
+      });
+
+      const response = await instance.post('auction/requestUnfreeze', payload);
+      let status = response.data.statusCode;
+
+      if (status === 200) {
+        console.log("Request Submitted Succesfully");
+        getAuctionInfo();
+        alert("Request submitted succesfully");
+      } else if (status === 400) {
+        alert("A request has already been made for this item.")
+      }
+      else {
+        alert("Request did not submit.")
+      }
+    } catch (error) {
+      console.log("Error requesting unfreeze: ", error);
+    } 
   };
 
   // Component for individual auction table
@@ -287,7 +317,8 @@ const AuctionDashboard = () => {
                   <RequestUnfreeze
                     onCancel={() => setFrozenAuctionId(null)}
                     onSubmit={(reason, timestamp) => {
-                      alert(`Unfreeze Requested\nReason: ${reason}\nTimestamp: ${new Date(timestamp).toLocaleString()}`);
+                      const formattedTimestamp = formatDateTime(timestamp);
+                      handleRequestUnfreeze(item.auction_id, reason, formattedTimestamp);
                     }}
                   />
                 </div>
