@@ -28,15 +28,24 @@ class Auction {
   }
 }
 
+enum status {
+  inactive,
+  active,
+  completed,
+  failed,
+  archived,
+  frozen
+}
+
 // Update interface to include isInactive prop
 interface AuctionTableProps {
   title: string;
   items: Auction[];
-  isInactive: boolean;
+  itemStatus: status;
 }
 
 
-const AuctionDashboard = () => {
+const AdminDashboard = () => {
   const router = useRouter();
 
 
@@ -64,34 +73,6 @@ const AuctionDashboard = () => {
 
 
 
-  const publishAuction = async (auction_id: number) => {
-    const payload = JSON.stringify({
-      auctionId: auction_id,
-      token: `Bearer ${getToken()}`
-    });
-
-    console.log(auction_id)
-    try {
-      const response = await instance.post('/auction/publish', payload);
-      const status = response.data.statusCode;
-
-
-
-
-      if (status === 200) {
-        getAuctionInfo();
-      }
-      console.log(response)
-      if (status === 418) {
-        //router.push('/login')
-      }
-    }
-    catch (error) {
-      console.log(error)
-      alert("Error publishing auction")
-    }
-
-  };
 
   const getAuctionInfo = async () => {
 
@@ -174,8 +155,37 @@ const AuctionDashboard = () => {
 
   //Handler for freeze auction
 
-  const freezeAuction = async (user_id: number) => {
-    const payload = JSON.stringify({})
+  const handleStatusChange = async (auction_id: number, status: string) => {
+    const payload = JSON.stringify({
+      auctionId: auction_id,
+      status: status,
+      token: `Bearer ${getToken()}`
+    });
+
+    console.log(auction_id)
+    try {
+      console.log("Here")
+      const response = await instance.post('/admin/changeAuctionStatus', payload);
+      console.log("NOw here")
+      
+      const status = response.data.statusCode;
+
+
+
+
+      if (status === 200) {
+        getAuctionInfo();
+      }
+      console.log(response)
+      if (status === 418) {
+        //router.push('/login')
+      }
+    }
+    catch (error) {
+      console.log(error)
+      alert("Error publishing auction")
+    }
+    
   }
 
   //Handler for Edit Auction Submission
@@ -210,7 +220,7 @@ const AuctionDashboard = () => {
   };
 
   // Component for individual auction table
-  const AuctionTable: React.FC<AuctionTableProps> = ({ title, items, isInactive }) => (
+  const AuctionTable: React.FC<AuctionTableProps> = ({ title, items, itemStatus }) => (
     <div className="mb-6">
       <div className="bg-gray-100 p-3 rounded-t-md font-medium text-black">
         {title}
@@ -225,7 +235,17 @@ const AuctionDashboard = () => {
                   <span className="whitespace-nowrap">{"User: " + item.item_seller}</span>
                   <span className="whitespace-nowrap">{"Item: " + item.item_name}</span>
                 </div>
-                {isInactive && (
+                {itemStatus == status.inactive && (
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => toggleViewForm(item.auction_id)}
+                      className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
+                    >
+                      View
+                    </button>
+                  </div>
+                )}
+                {itemStatus == status.active && (
                   <div className="space-x-2">
                     <button
                       onClick={() => toggleViewForm(item.auction_id)}
@@ -234,11 +254,28 @@ const AuctionDashboard = () => {
                       View
                     </button>
                     <button 
-                      onClick={() => toggleViewForm(item.auction_id)}
+                      onClick={() => handleStatusChange(item.auction_id, 'frozen')}
                       className="px-3 py-1 text-sm border border-black rounded hover:bg-red-500 hover:text-white hover:border-red-500"
                     >
                       
-                      Remove
+                      Freeze
+                    </button>
+                  </div>
+                )}
+                {itemStatus == status.frozen && (
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => toggleViewForm(item.auction_id)}
+                      className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
+                    >
+                      View
+                    </button>
+                    <button 
+                      onClick={() => handleStatusChange(item.auction_id, 'active')}
+                      className="px-3 py-1 text-sm border border-black rounded hover:bg-red-500 hover:text-white hover:border-red-500"
+                    >
+                      
+                      Unfreeze
                     </button>
                   </div>
                 )}
@@ -282,24 +319,24 @@ const AuctionDashboard = () => {
           </div>
         </div>
         <div className="space-y-6">
-          <AuctionTable title="UNLISTED" items={auctionData.unlisted} isInactive={true} />
-          <AuctionTable title="ACTIVE" items={auctionData.active} isInactive={false} />
-          <AuctionTable title="BOUGHT" items={auctionData.bought} isInactive={false} />
-          <AuctionTable title="FAILED" items={auctionData.failed} isInactive={false} />
-          <AuctionTable title="ARCHIVED" items={auctionData.archived} isInactive={false} />
-          <AuctionTable title="FROZEN" items={auctionData.frozen} isInactive={false} />
+          <AuctionTable title="UNLISTED" items={auctionData.unlisted} itemStatus={status.inactive} />
+          <AuctionTable title="ACTIVE" items={auctionData.active} itemStatus={status.active} />
+          <AuctionTable title="BOUGHT" items={auctionData.bought} itemStatus={status.completed} />
+          <AuctionTable title="FAILED" items={auctionData.failed} itemStatus={status.failed} />
+          <AuctionTable title="ARCHIVED" items={auctionData.archived} itemStatus={status.archived} />
+          <AuctionTable title="FROZEN" items={auctionData.frozen} itemStatus={status.frozen} />
         </div>
       </div>
     </Suspense>
   );
 };
 
-const AuctionDashboardWrapper = () => {
+const AdminDashboardWrapper = () => {
   return (
     <Suspense fallback={<div>Loading Dashboard...</div>}>
-      <AuctionDashboard />
+      <AdminDashboard />
     </Suspense>
   );
 }
 
-export default AuctionDashboardWrapper;
+export default AdminDashboardWrapper;
