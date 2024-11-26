@@ -14,15 +14,17 @@ class Auction {
   item_start_time: string
   item_end_time: string
   item_information: string
+  auction_type: string
 
 
-  constructor(aid: number, name: string, starting_bid: number, start_time: string, end_time: string, info: string) {
+  constructor(aid: number, name: string, starting_bid: number, start_time: string, end_time: string, info: string, auctionType: string) {
     this.auction_id = aid;
     this.item_name = name;
     this.item_starting_price = starting_bid;
     this.item_start_time = start_time;
     this.item_end_time = end_time;
     this.item_information = info;
+    this.auction_type = auctionType;
   }
 }
 
@@ -36,8 +38,6 @@ interface AuctionTableProps {
 
 const AuctionDashboard = () => {
   const router = useRouter();
-
-
   const user = getUsername()
 
   // Dummy data for different auction categories
@@ -126,13 +126,14 @@ const AuctionDashboard = () => {
         const processedData: Record<string, Auction[]> = {};
 
         Object.keys(auctionData).forEach(key => {
-          processedData[key] = auctionData[key].map((item: { auction_id: number, item_name: string, item_starting_price: number, item_start_time: string, item_end_time: string, item_information: string }) => ({
+          processedData[key] = auctionData[key].map((item: { auction_id: number, item_name: string, item_starting_price: number, item_start_time: string, item_end_time: string, item_information: string, auctionType: boolean }) => ({
             auction_id: item.auction_id,
             item_name: item.item_name,
             item_starting_price: item.item_starting_price,
             item_start_time: item.item_start_time,
             item_end_time: item.item_end_time,
-            item_information: item.item_information
+            item_information: item.item_information,
+            auction_type: item.auctionType ? "buyNow" : "auction"
           }));
         });
         console.log(processedData)
@@ -182,7 +183,8 @@ const AuctionDashboard = () => {
         "itemDescription": editedAuction.item_information,
         "startingPrice": editedAuction.item_starting_price,
         "startTime": editedAuction.item_start_time,
-        "endTime": editedAuction.item_end_time
+        "endTime": editedAuction.item_end_time,
+        "auctionType": editedAuction.auction_type === "buyNow" ? true : false,
       });
 
       console.log(payload);
@@ -247,6 +249,7 @@ const AuctionDashboard = () => {
                     startTime={formatDateTime(item.item_start_time)} // Replace with actual data
                     endTime={formatDateTime(item.item_end_time)} // Replace with actual data
                     itemDescription={item.item_information}
+                    auctionType={item.auction_type}
                     onCancel={() => setEditingAuctionId(null)} // Close the form
                     onSubmit={(updatedAuction) => {
                       const convertedAuction = new Auction(
@@ -255,7 +258,8 @@ const AuctionDashboard = () => {
                         updatedAuction.startingPrice,
                         updatedAuction.startTime,
                         updatedAuction.endTime,
-                        updatedAuction.itemDescription
+                        updatedAuction.itemDescription,
+                        updatedAuction.auctionType
                       );
 
                       handleEditSubmit(convertedAuction, getAuctionInfo)
