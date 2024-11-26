@@ -30,6 +30,7 @@ export default function AuctionPage() {
         end_time: Date
         winner_id: number
         auction_type: boolean
+        picture: string
     }
 
     const router = useRouter()
@@ -40,12 +41,6 @@ export default function AuctionPage() {
     const [bids, setBids] = useState<Bid[]>([])
     const [userData, setUserData] = useState({ username: "", balance: 0 })
     const [dispError, setDispError] = useState(false) //error unused atm
-    const displayImage = (imgElement: HTMLImageElement) => {
-        const dataUrl = localStorage.getItem("img")
-        if (dataUrl) {
-            imgElement.src = dataUrl
-        }
-    }
 
     const body = JSON.stringify({ username: user })
 
@@ -94,7 +89,6 @@ export default function AuctionPage() {
             console.log(jsonAuctionBids)
             setAuction(jsonItemResp)
             setBids(jsonAuctionBids)
-            displayImage((document.getElementById("itemImg") as HTMLImageElement))
         } catch (error) {
             setDispError(true)
             console.log(error)
@@ -176,7 +170,7 @@ export default function AuctionPage() {
                     <div id="buyNow" hidden={auction.auction_type}>
                         <button onClick={() => handleBuyNow()} className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black">Buy Now</button>
                     </div>
-                    <img id="itemImg"></img>
+                    <img id="itemImg" src={auction.picture}></img>
                     <div hidden={auction.auction_type}>
                         {/**TODO: for onkeyup, make sure user cannot enter something less than highest bid*/}
                         <input id="bidInput" placeholder="Enter a bid..." onKeyUp={() => { }} type="number" className="rounded-md w-32 [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-1 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-1 [&::-webkit-outer-spin-button]:appearance-none text-end"></input>
