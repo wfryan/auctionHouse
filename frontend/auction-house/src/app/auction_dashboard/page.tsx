@@ -69,7 +69,7 @@ const AuctionDashboard = () => {
     setEditingAuctionId((current) => (current === auctionId ? null : auctionId));
   };
 
-  const toggleFrozenForm = (auctionId : number) => {
+  const toggleFrozenForm = (auctionId: number) => {
     setFrozenAuctionId((current) => (current === auctionId ? null : auctionId));
   }
 
@@ -96,10 +96,6 @@ const AuctionDashboard = () => {
     try {
       const response = await instance.post('/auction/publish', payload);
       const status = response.data.statusCode;
-
-
-
-
       if (status === 200) {
         getAuctionInfo();
       }
@@ -111,6 +107,35 @@ const AuctionDashboard = () => {
     catch (error) {
       console.log(error)
       alert("Error publishing auction")
+    }
+
+  };
+
+  const unpublishAuction = async (auction_id: number) => {
+    const payload = JSON.stringify({
+      auctionId: auction_id,
+      token: `Bearer ${getToken()}`
+    });
+
+    console.log(auction_id)
+    try {
+      const response = await instance.post('/auction/unpublish', payload);
+      const status = response.data.statusCode;
+
+      if (status === 200) {
+        getAuctionInfo();
+      }
+      if (status === 400) {
+        alert(response.data.body)
+      }
+      console.log(response)
+      if (status === 418) {
+        //router.push('/login')
+      }
+    }
+    catch (error) {
+      console.log(error)
+      alert("Error unpublishing auction")
     }
 
   };
@@ -273,6 +298,16 @@ const AuctionDashboard = () => {
                     </button>
                     <button className="px-3 py-1 text-sm border border-black rounded hover:bg-red-500 hover:text-white hover:border-red-500">
                       Remove
+                    </button>
+                  </div>
+                )}
+                {itemStatus === status.Active && (
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => unpublishAuction(item.auction_id)}
+                      className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
+                    >
+                      Unpublish
                     </button>
                   </div>
                 )}
