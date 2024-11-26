@@ -5,6 +5,7 @@ import { instance, header } from '../utils/auctionHouseApi';
 import { getUsername } from '../utils/jwt';
 
 const CreateAuctionForm = () => {
+
   //State Declaration for Form Data
   const [formData, setFormData] = useState({
     itemName: '',
@@ -17,7 +18,7 @@ const CreateAuctionForm = () => {
   });
 
   const router = useRouter()
- 
+
   const [imagePreview, setImagePreview] = useState<string>('');
   const [priceError, setPriceError] = useState<string>('');
 
@@ -147,9 +148,6 @@ const CreateAuctionForm = () => {
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-center">
             Create New Auction
           </h1>
-          <div>
-            <h1>{getUsername()}</h1>
-          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
@@ -242,22 +240,22 @@ const CreateAuctionForm = () => {
                 onChange={handleInputChange}
                 rows={4}
               />
-                <label htmlFor="dropdown" className="block text-sm font-medium text-white-700 mt-4 mb-2">
-    Item Type
-  </label>
-  <select
-    id="dropdown"
-    name="auctionType"
-    className="w-full p-2 sm:p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-black"
-    value={formData.auctionType}
-    onChange={(e) => handleInputChange(e)}
-  >
-    <option value="" disabled>
-      Choose an Auction Type
-    </option>
-    <option value="auction">Auction</option>
-    <option value="buyNow">Buy Now</option>
-  </select>
+              <label htmlFor="dropdown" className="block text-sm font-medium text-white-700 mt-4 mb-2">
+                Item Type
+              </label>
+              <select
+                id="dropdown"
+                name="auctionType"
+                className="w-full p-2 sm:p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-black"
+                value={formData.auctionType}
+                onChange={(e) => handleInputChange(e)}
+              >
+                <option value="" disabled>
+                  Choose an Auction Type
+                </option>
+                <option value="auction">Auction</option>
+                <option value="buyNow">Buy Now</option>
+              </select>
             </div>
 
             {/* Image Upload Field */}
