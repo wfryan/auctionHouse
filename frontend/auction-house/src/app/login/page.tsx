@@ -43,11 +43,11 @@ const LoginPage = () => {
                 const accountType = response.data.body.type;
                 saveToken(response.data.body.token);
                 if (accountType == "buyer") {
-                    router.push('/search');
+                    router.push('/buyer_dashboard');
                 } else if (accountType == "seller") {
                     router.push('/auction_dashboard');
                 } else if (accountType == "admin") {
-
+                    router.push('/admin_dashboard');
                 }
             } else {
                 if (status === 404) {

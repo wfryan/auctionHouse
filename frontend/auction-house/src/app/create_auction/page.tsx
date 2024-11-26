@@ -13,6 +13,7 @@ const CreateAuctionForm = () => {
     startingPrice: '',
     startTime: '',
     endTime: '',
+    auctionType: '',
     image: null as File | null
   });
 
@@ -22,7 +23,7 @@ const CreateAuctionForm = () => {
   const [priceError, setPriceError] = useState<string>('');
 
   //Input Handler for Price
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement> | ChangeEvent<HTMLSelectElement>) => {
     console.log(formData.startTime)
     const { name, value } = e.target;
     if (name === 'startingPrice') {
@@ -255,6 +256,22 @@ const CreateAuctionForm = () => {
                 onChange={handleInputChange}
                 rows={4}
               />
+              <label htmlFor="dropdown" className="block text-sm font-medium text-white-700 mt-4 mb-2">
+                Item Type
+              </label>
+              <select
+                id="dropdown"
+                name="auctionType"
+                className="w-full p-2 sm:p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-black"
+                value={formData.auctionType}
+                onChange={(e) => handleInputChange(e)}
+              >
+                <option value="" disabled>
+                  Choose an Auction Type
+                </option>
+                <option value="auction">Auction</option>
+                <option value="buyNow">Buy Now</option>
+              </select>
             </div>
 
             {/* Image Upload Field */}

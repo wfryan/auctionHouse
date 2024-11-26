@@ -1,50 +1,95 @@
-import React, {useState, FormEvent, ChangeEvent} from 'react';
+import React, { useState, FormEvent } from 'react';
 
 interface RequestUnfreezeProps {
-    onCancel: () => void;
-    onSubmit: (reason: string, timestamp: string) => void;
-  }
-  
-  const RequestUnfreeze: React.FC<RequestUnfreezeProps> = ({ onCancel, onSubmit }) => {
-    const [reason, setReason] = useState('');
-    const [timestamp] = useState(() => new Date().toISOString()); // Initialize timestamp once
-  
-    return (
-      <div className="p-4 border rounded bg-white">
-        <h3 className="font-bold text-lg text-black">Request Unfreeze</h3>
-        <div className="mt-2">
-          <label className="block mb-1 text-black">Reason:</label>
+  onCancel: () => void;
+  onSubmit: (reason: string, timestamp: string) => void;
+}
+
+const RequestUnfreeze: React.FC<RequestUnfreezeProps> = ({ onCancel, onSubmit }) => {
+  const [reason, setReason] = useState('');
+  const [timestamp] = useState(() => new Date().toISOString()); // Initialize timestamp once
+  const [reasonError, setReasonError] = useState<string>('');
+
+  // Function to handle form submission
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    
+    if (!reason.trim()) {
+      setReasonError('Reason is required');
+      return;
+    }
+
+    // Reset error and submit form data
+    setReasonError('');
+    onSubmit(reason, timestamp);
+  };
+
+  // Function to format the timestamp to EST
+  const formatDateTime = (dateTime: string) => {
+    if (!dateTime) return '';
+    const utcDate = new Date(dateTime);
+    if (isNaN(utcDate.getTime()) || utcDate.getFullYear() <= 1970) return '';
+
+    const estDate = new Date(utcDate.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+    const year = estDate.getFullYear();
+    const month = String(estDate.getMonth() + 1).padStart(2, '0');
+    const day = String(estDate.getDate()).padStart(2, '0');
+    const hours = String(estDate.getHours()).padStart(2, '0');
+    const minutes = String(estDate.getMinutes()).padStart(2, '0');
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  return (
+    <div className="p-4 border rounded-md bg-white shadow-md">
+      <h2 className="text-xl font-semibold mb-4 text-black">Request Unfreeze</h2>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-black">
+            Reason
+          </label>
           <textarea
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            className="w-full border rounded p-2 text-black"
+            className={`mt-1 block w-full p-2 border ${reasonError ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm text-black`}
+            required
           />
+          {reasonError && (
+            <div className="text-red-500 text-sm mt-1">
+              {reasonError}
+            </div>
+          )}
         </div>
-        <div className="mt-2">
-          <label className="block mb-1 text-black">Timestamp:</label>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-black">
+            Timestamp
+          </label>
           <input
-            type="text"
-            value={new Date(timestamp).toLocaleString()} // Display timestamp in a user-friendly format
+            type="datetime-local"
+            value={formatDateTime(timestamp)} // Display timestamp in EST
             readOnly
-            className="w-full border rounded p-2 bg-gray-100 text-black"
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm text-black bg-gray-100"
           />
         </div>
-        <div className="mt-4 flex space-x-2">
+        <div className="flex space-x-4">
           <button
-            onClick={() => onSubmit(reason, timestamp)}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Submit
-          </button>
-          <button
+            type="button"
             onClick={onCancel}
-            className="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400"
+            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
           >
             Cancel
           </button>
+          <button
+            type="submit"
+            className={`px-4 py-2 ${reasonError ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} text-white rounded-md`}
+            disabled={!!reasonError}
+          >
+            Submit Request
+          </button>
         </div>
-      </div>
-    );
-  };
-  
-  export default RequestUnfreeze;
+      </form>
+    </div>
+  );
+};
+
+export default RequestUnfreeze;

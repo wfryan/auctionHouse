@@ -15,15 +15,17 @@ class Auction {
   item_start_time: string
   item_end_time: string
   item_information: string
+  auction_type: string
 
 
-  constructor(aid: number, name: string, starting_bid: number, start_time: string, end_time: string, info: string) {
+  constructor(aid: number, name: string, starting_bid: number, start_time: string, end_time: string, info: string, auctionType: string) {
     this.auction_id = aid;
     this.item_name = name;
     this.item_starting_price = starting_bid;
     this.item_start_time = start_time;
     this.item_end_time = end_time;
     this.item_information = info;
+    this.auction_type = auctionType;
   }
 }
 
@@ -46,8 +48,6 @@ interface AuctionTableProps {
 
 const AuctionDashboard = () => {
   const router = useRouter();
-
-
   const user = getUsername()
 
   // Dummy data for different auction categories
@@ -69,22 +69,19 @@ const AuctionDashboard = () => {
     setEditingAuctionId((current) => (current === auctionId ? null : auctionId));
   };
 
-  const toggleFrozenForm = (auctionId : number) => {
+  const toggleFrozenForm = (auctionId: number) => {
     setFrozenAuctionId((current) => (current === auctionId ? null : auctionId));
   }
 
   //Handler for routing the user to the profile page
   const handleProfileClick = () => {
     router.push('/seller_profile')
-    //window.location.href = '/pages/seller_profile' + appendedUrl;
   };
 
   //Handler for routing the user to the profile page
   const handleCreateAuction = () => {
     router.push('/create_auction')
-    //window.location.href = '/pages/create_auction' + appendedUrl;
   };
-
 
   const publishAuction = async (auction_id: number) => {
     const payload = JSON.stringify({
@@ -96,10 +93,6 @@ const AuctionDashboard = () => {
     try {
       const response = await instance.post('/auction/publish', payload);
       const status = response.data.statusCode;
-
-
-
-
       if (status === 200) {
         getAuctionInfo();
       }
@@ -115,10 +108,36 @@ const AuctionDashboard = () => {
 
   };
 
+  const unpublishAuction = async (auction_id: number) => {
+    const payload = JSON.stringify({
+      auctionId: auction_id,
+      token: `Bearer ${getToken()}`
+    });
+
+    console.log(auction_id)
+    try {
+      const response = await instance.post('/auction/unpublish', payload);
+      const status = response.data.statusCode;
+
+      if (status === 200) {
+        getAuctionInfo();
+      }
+      if (status === 400) {
+        alert(response.data.body)
+      }
+      console.log(response)
+      if (status === 418) {
+        //router.push('/login')
+      }
+    }
+    catch (error) {
+      console.log(error)
+      alert("Error unpublishing auction")
+    }
+
+  };
+
   const getAuctionInfo = async () => {
-
-    console.log(getToken())
-
     let tkn = getToken();
     if (tkn !== null) {
       console.log(decodeToken(tkn))
@@ -140,13 +159,14 @@ const AuctionDashboard = () => {
         const processedData: Record<string, Auction[]> = {};
 
         Object.keys(auctionData).forEach(key => {
-          processedData[key] = auctionData[key].map((item: { auction_id: number, item_name: string, item_starting_price: number, item_start_time: string, item_end_time: string, item_information: string }) => ({
+          processedData[key] = auctionData[key].map((item: { auction_id: number, item_name: string, item_starting_price: number, item_start_time: string, item_end_time: string, item_information: string, auctionType: boolean }) => ({
             auction_id: item.auction_id,
             item_name: item.item_name,
             item_starting_price: item.item_starting_price,
             item_start_time: item.item_start_time,
             item_end_time: item.item_end_time,
-            item_information: item.item_information
+            item_information: item.item_information,
+            auction_type: item.auctionType ? "buyNow" : "auction"
           }));
         });
         console.log(processedData)
@@ -174,17 +194,19 @@ const AuctionDashboard = () => {
   // Additional functionality to handle instances where there is no start time or end time for auctions.
   const formatDateTime = (dateTime: string) => {
     if (!dateTime) return '';
-    const utcDate = new Date(dateTime);
-    if (isNaN(utcDate.getTime()) || utcDate.getFullYear() <= 1970) return '';
+    const localDate = new Date(dateTime); // This will automatically convert the UTC date to local time
+    
+    if (isNaN(localDate.getTime()) || localDate.getFullYear() <= 1970) return '';
 
-    const year = utcDate.getUTCFullYear();
-    const month = String(utcDate.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(utcDate.getUTCDate()).padStart(2, '0');
-    const hours = String(utcDate.getUTCHours()).padStart(2, '0');
-    const minutes = String(utcDate.getUTCMinutes()).padStart(2, '0');
+    const year = localDate.getFullYear();
+    const month = String(localDate.getMonth() + 1).padStart(2, '0');
+    const day = String(localDate.getDate()).padStart(2, '0');
+    const hours = String(localDate.getHours()).padStart(2, '0');
+    const minutes = String(localDate.getMinutes()).padStart(2, '0');
 
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
+
 
   //Handler for Edit Auction Submission
   const handleEditSubmit = async (editedAuction: Auction) => {
@@ -196,7 +218,8 @@ const AuctionDashboard = () => {
         "itemDescription": editedAuction.item_information,
         "startingPrice": editedAuction.item_starting_price,
         "startTime": editedAuction.item_start_time,
-        "endTime": editedAuction.item_end_time
+        "endTime": editedAuction.item_end_time,
+        "auctionType": editedAuction.auction_type === "buyNow" ? true : false,
       });
 
       console.log(payload);
@@ -215,6 +238,34 @@ const AuctionDashboard = () => {
       console.log("Error Submitting the form: ", error);
       alert('There was an error updating the auction. Please try again.');
     }
+  };
+
+  //Handler for Request Unfreeze Submission
+  const handleRequestUnfreeze = async(auctionId: number, reason: string, timestamp: string) => {
+    try {
+      const payload = JSON.stringify({
+        "auctionId" : auctionId, 
+        "reason" : reason, 
+        "date" : timestamp, 
+        "token" : `Bearer ${getToken()}`
+      });
+
+      const response = await instance.post('auction/requestUnfreeze', payload);
+      let status = response.data.statusCode;
+
+      if (status === 200) {
+        console.log("Request Submitted Succesfully");
+        getAuctionInfo();
+        alert("Request submitted succesfully");
+      } else if (status === 400) {
+        alert("A request has already been made for this item.")
+      }
+      else {
+        alert("Request did not submit.")
+      }
+    } catch (error) {
+      console.log("Error requesting unfreeze: ", error);
+    } 
   };
 
   // Component for individual auction table
@@ -246,6 +297,16 @@ const AuctionDashboard = () => {
                     </button>
                   </div>
                 )}
+                {itemStatus === status.Active && (
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => unpublishAuction(item.auction_id)}
+                      className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
+                    >
+                      Unpublish
+                    </button>
+                  </div>
+                )}
                 {itemStatus === status.Frozen && (
                   <div className="space-x-2">
                     <button
@@ -267,7 +328,8 @@ const AuctionDashboard = () => {
                     startTime={formatDateTime(item.item_start_time)}
                     endTime={formatDateTime(item.item_end_time)}
                     itemDescription={item.item_information}
-                    onCancel={() => setEditingAuctionId(null)}
+                    auctionType={item.auction_type}
+                    onCancel={() => setEditingAuctionId(null)} // Close the form
                     onSubmit={(updatedAuction) => {
                       const convertedAuction = new Auction(
                         updatedAuction.auctionId,
@@ -275,7 +337,8 @@ const AuctionDashboard = () => {
                         updatedAuction.startingPrice,
                         updatedAuction.startTime,
                         updatedAuction.endTime,
-                        updatedAuction.itemDescription
+                        updatedAuction.itemDescription,
+                        updatedAuction.auctionType
                       );
                       handleEditSubmit(convertedAuction);
                     }}
@@ -287,7 +350,8 @@ const AuctionDashboard = () => {
                   <RequestUnfreeze
                     onCancel={() => setFrozenAuctionId(null)}
                     onSubmit={(reason, timestamp) => {
-                      alert(`Unfreeze Requested\nReason: ${reason}\nTimestamp: ${new Date(timestamp).toLocaleString()}`);
+                      const formattedTimestamp = formatDateTime(timestamp);
+                      handleRequestUnfreeze(item.auction_id, reason, formattedTimestamp);
                     }}
                   />
                 </div>
