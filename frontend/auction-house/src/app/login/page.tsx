@@ -47,7 +47,7 @@ const LoginPage = () => {
                 } else if (accountType == "seller") {
                     router.push('/auction_dashboard');
                 } else if (accountType == "admin") {
-
+                    router.push('/admin_dashboard');
                 }
             } else {
                 if (status === 404) {
