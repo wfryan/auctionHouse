@@ -5,6 +5,7 @@ import { instance, header } from '../utils/auctionHouseApi';
 import { getUsername } from '../utils/jwt';
 
 const CreateAuctionForm = () => {
+
   //State Declaration for Form Data
   const [formData, setFormData] = useState({
     itemName: '',
@@ -16,7 +17,7 @@ const CreateAuctionForm = () => {
   });
 
   const router = useRouter()
- 
+
   const [imagePreview, setImagePreview] = useState<string>('');
   const [priceError, setPriceError] = useState<string>('');
 
@@ -146,9 +147,6 @@ const CreateAuctionForm = () => {
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-center">
             Create New Auction
           </h1>
-          <div>
-            <h1>{user}</h1>
-          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
