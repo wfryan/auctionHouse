@@ -6,6 +6,7 @@ import { removeToken, getToken } from '../utils/cookie';
 import { decodeToken, getUsername } from '../utils/jwt';
 import SignOutButton from '../components/SignoutButton';
 import EditAuction from '../components/EditAuction';
+import RequestUnfreeze from '../components/RequestUnfreeze';
 
 class Auction {
   auction_id: number
@@ -26,11 +27,20 @@ class Auction {
   }
 }
 
+enum status {
+  Inactive,
+  Active,
+  Completed,
+  Failed,
+  Archived,
+  Frozen,
+}
+
 // Update interface to include isInactive prop
 interface AuctionTableProps {
   title: string;
   items: Auction[];
-  isInactive: boolean;
+  itemStatus: status;
 }
 
 
@@ -41,7 +51,6 @@ const AuctionDashboard = () => {
   const user = getUsername()
 
   // Dummy data for different auction categories
-
   const [auctionData, setAuctionData] = useState<Record<string, Auction[]>>({
     unlisted: [],
     active: [],
@@ -54,10 +63,15 @@ const AuctionDashboard = () => {
 
   //State to track the auction being edited
   const [editingAuctionId, setEditingAuctionId] = useState<number | null>(null);
+  const [frozenAuctionId, setFrozenAuctionId] = useState<number | null>(null);
 
   const toggleEditForm = (auctionId: number) => {
     setEditingAuctionId((current) => (current === auctionId ? null : auctionId));
   };
+
+  const toggleFrozenForm = (auctionId: number) => {
+    setFrozenAuctionId((current) => (current === auctionId ? null : auctionId));
+  }
 
   //Handler for routing the user to the profile page
   const handleProfileClick = () => {
@@ -79,10 +93,6 @@ const AuctionDashboard = () => {
     try {
       const response = await instance.post('/auction/publish', payload);
       const status = response.data.statusCode;
-
-
-
-
       if (status === 200) {
         getAuctionInfo();
       }
@@ -94,6 +104,35 @@ const AuctionDashboard = () => {
     catch (error) {
       console.log(error)
       alert("Error publishing auction")
+    }
+
+  };
+
+  const unpublishAuction = async (auction_id: number) => {
+    const payload = JSON.stringify({
+      auctionId: auction_id,
+      token: `Bearer ${getToken()}`
+    });
+
+    console.log(auction_id)
+    try {
+      const response = await instance.post('/auction/unpublish', payload);
+      const status = response.data.statusCode;
+
+      if (status === 200) {
+        getAuctionInfo();
+      }
+      if (status === 400) {
+        alert(response.data.body)
+      }
+      console.log(response)
+      if (status === 418) {
+        //router.push('/login')
+      }
+    }
+    catch (error) {
+      console.log(error)
+      alert("Error unpublishing auction")
     }
 
   };
@@ -167,7 +206,7 @@ const AuctionDashboard = () => {
   };
 
   //Handler for Edit Auction Submission
-  const handleEditSubmit = async (editedAuction: Auction, getAuctionInfo: () => void) => {
+  const handleEditSubmit = async (editedAuction: Auction) => {
     try {
       const payload = JSON.stringify({
         "username": user,
@@ -198,19 +237,16 @@ const AuctionDashboard = () => {
   };
 
   // Component for individual auction table
-  const AuctionTable: React.FC<AuctionTableProps> = ({ title, items, isInactive }) => (
+  const AuctionTable: React.FC<AuctionTableProps> = ({ title, items, itemStatus }) => (
     <div className="mb-6">
-      <div className="bg-gray-100 p-3 rounded-t-md font-medium text-black">
-        {title}
-      </div>
+      <div className="bg-gray-100 p-3 rounded-t-md font-medium text-black">{title}</div>
       <div className="border border-gray-300 rounded-b-md">
         {items.length > 0 ? (
-          items.map((item, index) => (
-            <div key={index} className="border-b last:border-b-0">
-              {/* Auction item row */}
+          items.map((item) => (
+            <div key={item.auction_id} className="border-b last:border-b-0">
               <div className="p-4 flex justify-between items-center">
                 <span>{item.item_name}</span>
-                {isInactive && (
+                {itemStatus === status.Inactive && (
                   <div className="space-x-2">
                     <button
                       onClick={() => publishAuction(item.auction_id)}
@@ -229,19 +265,38 @@ const AuctionDashboard = () => {
                     </button>
                   </div>
                 )}
+                {itemStatus === status.Active && (
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => unpublishAuction(item.auction_id)}
+                      className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
+                    >
+                      Unpublish
+                    </button>
+                  </div>
+                )}
+                {itemStatus === status.Frozen && (
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => toggleFrozenForm(item.auction_id)}
+                      className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
+                    >
+                      Request Unfreeze
+                    </button>
+                  </div>
+                )}
               </div>
-
-              {/* Edit form */}
+              {/* EDITING AUCTIONS FORM */}
               {editingAuctionId === item.auction_id && (
                 <div className="p-4 bg-black-50">
                   <EditAuction
                     auctionId={item.auction_id}
                     itemName={item.item_name}
-                    startingPrice={item.item_starting_price} // Replace with actual data
-                    startTime={formatDateTime(item.item_start_time)} // Replace with actual data
-                    endTime={formatDateTime(item.item_end_time)} // Replace with actual data
+                    startingPrice={item.item_starting_price}
+                    startTime={formatDateTime(item.item_start_time)}
+                    endTime={formatDateTime(item.item_end_time)}
                     itemDescription={item.item_information}
-                    onCancel={() => setEditingAuctionId(null)} // Close the form
+                    onCancel={() => setEditingAuctionId(null)}
                     onSubmit={(updatedAuction) => {
                       const convertedAuction = new Auction(
                         updatedAuction.auctionId,
@@ -251,8 +306,17 @@ const AuctionDashboard = () => {
                         updatedAuction.endTime,
                         updatedAuction.itemDescription
                       );
-
-                      handleEditSubmit(convertedAuction, getAuctionInfo)
+                      handleEditSubmit(convertedAuction);
+                    }}
+                  />
+                </div>
+              )}
+              {frozenAuctionId === item.auction_id && (
+                <div className="p-4 bg-black-50">
+                  <RequestUnfreeze
+                    onCancel={() => setFrozenAuctionId(null)}
+                    onSubmit={(reason, timestamp) => {
+                      alert(`Unfreeze Requested\nReason: ${reason}\nTimestamp: ${new Date(timestamp).toLocaleString()}`);
                     }}
                   />
                 </div>
@@ -272,28 +336,22 @@ const AuctionDashboard = () => {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl md:text-3xl font-bold">Auction Dashboard</h1>
           <div className="flex space-x-4">
-            <button
-              onClick={handleProfileClick}
-              className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black"
-            >
+            <button onClick={handleProfileClick} className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black">
               Profile
             </button>
-            <button
-              onClick={handleCreateAuction}
-              className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black"
-            >
+            <button onClick={handleCreateAuction} className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black">
               Create New Auction
             </button>
             <SignOutButton />
           </div>
         </div>
         <div className="space-y-6">
-          <AuctionTable title="UNLISTED" items={auctionData.unlisted} isInactive={true} />
-          <AuctionTable title="ACTIVE" items={auctionData.active} isInactive={false} />
-          <AuctionTable title="BOUGHT" items={auctionData.bought} isInactive={false} />
-          <AuctionTable title="FAILED" items={auctionData.failed} isInactive={false} />
-          <AuctionTable title="ARCHIVED" items={auctionData.archived} isInactive={false} />
-          <AuctionTable title="FROZEN" items={auctionData.frozen} isInactive={false} />
+          <AuctionTable title="UNLISTED" items={auctionData.unlisted} itemStatus={status.Inactive} />
+          <AuctionTable title="ACTIVE" items={auctionData.active} itemStatus={status.Active} />
+          <AuctionTable title="COMPLETED" items={auctionData.bought} itemStatus={status.Completed} />
+          <AuctionTable title="FAILED" items={auctionData.failed} itemStatus={status.Failed} />
+          <AuctionTable title="ARCHIVED" items={auctionData.archived} itemStatus={status.Archived} />
+          <AuctionTable title="FROZEN" items={auctionData.frozen} itemStatus={status.Frozen} />
         </div>
       </div>
     </Suspense>
