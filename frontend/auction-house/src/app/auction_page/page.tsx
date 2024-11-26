@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { getUsername } from "../utils/jwt"
 import { instance } from "../utils/auctionHouseApi"
 import BuyerInfo from "../components/BuyerInfo"
-import { instance } from "../utils/auctionHouseApi"
 import { getToken } from "../utils/cookie"
 
 export interface Bid { //export needed in BidDisplay
@@ -116,19 +115,19 @@ export default function AuctionPage() {
             token: `Bearer ${getToken()}`
         })
 
-        try{
+        try {
             const response = await instance.post('/auction/buyNow', functionInput)
             const status = response.data.statusCode;
-            if(status === 200){
+            if (status === 200) {
                 console.log(response.data)
                 alert("Awaiting fulfillment!")
                 router.push('/buyer_profile')
             }
-            else{
+            else {
                 console.log(`Error: ${response.data}`)
             }
         }
-        catch(error){
+        catch (error) {
             console.log(`Error: ${error}`)
         }
 
@@ -175,8 +174,8 @@ export default function AuctionPage() {
                     <p>start time: {auction.start_time.toString()}</p>
                     <p>end time: {auction.end_time.toString()}</p>
                     <div id="buyNow" hidden={auction.auction_type}>
-                        <button onClick={()=> handleBuyNow()}  className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black">Buy Now</button>
-                        </div>
+                        <button onClick={() => handleBuyNow()} className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black">Buy Now</button>
+                    </div>
                     <img id="itemImg"></img>
                     <div hidden={auction.auction_type}>
                         {/**TODO: for onkeyup, make sure user cannot enter something less than highest bid*/}
