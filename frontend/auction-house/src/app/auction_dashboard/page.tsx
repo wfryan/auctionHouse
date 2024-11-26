@@ -195,7 +195,7 @@ const AuctionDashboard = () => {
   const formatDateTime = (dateTime: string) => {
     if (!dateTime) return '';
     const localDate = new Date(dateTime); // This will automatically convert the UTC date to local time
-    
+
     if (isNaN(localDate.getTime()) || localDate.getFullYear() <= 1970) return '';
 
     const year = localDate.getFullYear();
@@ -220,6 +220,7 @@ const AuctionDashboard = () => {
         "startTime": editedAuction.item_start_time,
         "endTime": editedAuction.item_end_time,
         "auctionType": editedAuction.auction_type === "buyNow" ? true : false,
+        "token": `Bearer ${getToken()}`
       });
 
       console.log(payload);
@@ -241,13 +242,13 @@ const AuctionDashboard = () => {
   };
 
   //Handler for Request Unfreeze Submission
-  const handleRequestUnfreeze = async(auctionId: number, reason: string, timestamp: string) => {
+  const handleRequestUnfreeze = async (auctionId: number, reason: string, timestamp: string) => {
     try {
       const payload = JSON.stringify({
-        "auctionId" : auctionId, 
-        "reason" : reason, 
-        "date" : timestamp, 
-        "token" : `Bearer ${getToken()}`
+        "auctionId": auctionId,
+        "reason": reason,
+        "date": timestamp,
+        "token": `Bearer ${getToken()}`
       });
 
       const response = await instance.post('auction/requestUnfreeze', payload);
@@ -265,7 +266,7 @@ const AuctionDashboard = () => {
       }
     } catch (error) {
       console.log("Error requesting unfreeze: ", error);
-    } 
+    }
   };
 
   // Component for individual auction table
