@@ -39,7 +39,7 @@ export default function AuctionPage() {
 
     const [auction, setAuction] = useState<Auction | null>(null)
     const [bids, setBids] = useState<Bid[]>([])
-    const [userData, setUserData] = useState({ username: "", balance: 0 })
+    const [userData, setUserData] = useState({ balance: 0, user_id: 0 })
     const [dispError, setDispError] = useState(false) //error unused atm
 
     const body = JSON.stringify({ username: user })
@@ -72,7 +72,8 @@ export default function AuctionPage() {
         try {
             console.log(localStorage.getItem("id"))
             const body = {
-                id: localStorage.getItem("id")
+                id: localStorage.getItem("id"),
+                username: user
             }
             const resp = await fetch("https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/items/viewItem", {
                 method: "POST",
@@ -89,6 +90,8 @@ export default function AuctionPage() {
             console.log(jsonAuctionBids)
             setAuction(jsonItemResp)
             setBids(jsonAuctionBids)
+            setUserData(awaitRespJson.body.user)
+            console.log(userData)
         } catch (error) {
             setDispError(true)
             console.log(error)
@@ -128,20 +131,37 @@ export default function AuctionPage() {
     }
 
     const placeBidFunction = async () => {
+        console.log(userData.user_id)
         const bidValue = (document.getElementById("bidInput") as HTMLInputElement).value
+        console.log(parseInt(bidValue))
+        console.log(auction?.auction_id)
+        console.log(formatTime())
         try {
-            if (bidValue == "" || parseInt(bidValue) < bids[0].amount) { //TODO: make sure bids list is ordered in lambda by price with highest at front of list
-                throw new Error("there was an error")
+            console.log(bids)
+            if (bids.length == 0 && auction != null) {
+                if (bidValue == "" || parseInt(bidValue) < auction?.starting_bid) {
+                    throw new Error("there was an error")
+                }
             }
-            const resp = await fetch("", {
+            else {
+                if (bidValue == "" || parseInt(bidValue) < bids[0].amount) {
+                    throw new Error("there was an error")
+                }
+            }
+            const resp = await fetch("https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/auction/placeBid", {
                 method: "POST",
                 body: JSON.stringify({
-                    amount: bidValue,
+                    amount: parseInt(bidValue),
                     auction_id: auction?.auction_id,
-                    buyer_id: userData.balance, //todo 
+                    buyer_id: userData.user_id,
                     bidTime: formatTime()
                 })
             })
+            const respJson = await resp.json()
+            console.log(respJson)
+            setAuction(respJson.body.item)
+            setBids(respJson.body.bids)
+            setUserData(respJson.body.user)
         }
         catch (error) {
             console.log(error)
