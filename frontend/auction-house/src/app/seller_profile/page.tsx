@@ -1,20 +1,16 @@
 'use client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { Suspense } from 'react';
+import { getUsername } from '../utils/jwt';
 
 const SellerProfile = () => {
 
   const router = useRouter();
 
-  const searchParams = useSearchParams();
-
-  const user = searchParams?.get('username'); // JohnDoe
-
-  const appendedUrl = '?username=' + user;
 
   // Dummy data, eventually use Lambda Functions to retrieve information
   const userData = {
-    username: user,
+    username: getUsername(),
     description: "",
     balance: ""
   };
@@ -22,7 +18,7 @@ const SellerProfile = () => {
 
   // Function to go back to the previous page
   const handleBackButton = () => {
-    router.push('/auction_dashboard' + appendedUrl)
+    router.push('/auction_dashboard')
   };
 
   return (
@@ -81,10 +77,10 @@ const SellerProfile = () => {
   );
 };
 
-const SellerProfileWrapper =() => {
-  return(
+const SellerProfileWrapper = () => {
+  return (
     <Suspense fallback={<div>Awaiting user data</div>}>
-      <SellerProfile/>
+      <SellerProfile />
     </Suspense>
   )
 }

@@ -1,11 +1,7 @@
 'use client'
 import { useState } from "react"
 import { useRouter } from 'next/navigation';
-
-import axios from "axios";
-const instance = axios.create({
-    baseURL: "https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse"
-})
+import { instance } from "../utils/auctionHouseApi";
 
 
 const LoginPage = () => {
@@ -44,11 +40,10 @@ const LoginPage = () => {
                 setDE("");
                 const body = response.data.body
                 const accountType = body.type;
-                const appendedUrl = '?username=' + username;
                 if (accountType == "buyer") {
                     router.push('/buyer_dashboard');
                 } else if (accountType == "seller") {
-                    router.push('/auction_dashboard' + appendedUrl);
+                    router.push('/auction_dashboard');
                 } else if (accountType == "admin") {
                     router.push('/admin_dashboard');
                 }

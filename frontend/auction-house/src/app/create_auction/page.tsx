@@ -3,9 +3,9 @@ import React, { useState, ChangeEvent, Suspense } from 'react';
 
 import axios from "axios";
 import { useRouter, useSearchParams } from 'next/navigation';
-const instance = axios.create({
-  baseURL: "https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse"
-})
+import { instance, header } from '../utils/auctionHouseApi';
+import { getUsername } from '../utils/jwt';
+
 
 const CreateAuctionForm = () => {
 
@@ -110,7 +110,7 @@ const CreateAuctionForm = () => {
 
 
     const functionInput = JSON.stringify({
-      username: username,
+      username: getUsername(),
       itemName: formData.itemName,
       startingPrice: formData.startingPrice,
       itemDescription: formData.itemDescription,
@@ -145,7 +145,7 @@ const CreateAuctionForm = () => {
         //alert(response.data);
         console.log(createAuctionResponse.data);
         // Redirect only after a successful response
-        router.push('/auction_dashboard' + appendedUrl)
+        router.push('/auction_dashboard')
         //window.location.href = '/pages/auction_dashboard' + appendedUrl;
       } else {
         // Handle any other status codes appropriately
