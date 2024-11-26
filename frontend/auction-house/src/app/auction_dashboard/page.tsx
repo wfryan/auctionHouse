@@ -271,6 +271,16 @@ const AuctionDashboard = () => {
                     </button>
                   </div>
                 )}
+                {itemStatus === status.Active && (
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => unpublishAuction(item.auction_id)}
+                      className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
+                    >
+                      Unpublish
+                    </button>
+                  </div>
+                )}
                 {itemStatus === status.Frozen && (
                   <div className="space-x-2">
                     <button
