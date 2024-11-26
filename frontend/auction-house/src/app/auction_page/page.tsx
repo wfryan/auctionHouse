@@ -4,8 +4,9 @@ import BidDisplay from "../components/BidDisplay"
 import StatDisplay from "../components/StatDisplay"
 import { useRouter, useSearchParams } from "next/navigation"
 import { getUsername } from "../utils/jwt"
-import BuyerInfo from "../components/BuyerInfo"
 import { instance } from "../utils/auctionHouseApi"
+import BuyerInfo from "../components/BuyerInfo"
+import { getToken } from "../utils/cookie"
 
 export interface Bid { //export needed in BidDisplay
     bid_id: number,
@@ -28,6 +29,7 @@ export default function AuctionPage() {
         start_time: Date
         end_time: Date
         winner_id: number
+        auction_type: boolean
     }
 
     const router = useRouter()
@@ -104,10 +106,32 @@ export default function AuctionPage() {
         fetchData()
     }, [])
 
-
-
-
     /**TODO: ?: page should refresh every 30 seconds or so correct? to refresh bids. */
+
+    const handleBuyNow = async () => {
+        const functionInput = JSON.stringify({
+            username: getUsername(),
+            auctionId: auction?.auction_id,
+            token: `Bearer ${getToken()}`
+        })
+
+        try {
+            const response = await instance.post('/auction/buyNow', functionInput)
+            const status = response.data.statusCode;
+            if (status === 200) {
+                console.log(response.data)
+                alert("Awaiting fulfillment!")
+                router.push('/buyer_profile')
+            }
+            else {
+                console.log(`Error: ${response.data}`)
+            }
+        }
+        catch (error) {
+            console.log(`Error: ${error}`)
+        }
+
+    }
 
     const placeBidFunction = async () => {
         const bidValue = (document.getElementById("bidInput") as HTMLInputElement).value
@@ -149,8 +173,11 @@ export default function AuctionPage() {
                     <p>status: {auction.status}</p>
                     <p>start time: {auction.start_time.toString()}</p>
                     <p>end time: {auction.end_time.toString()}</p>
+                    <div id="buyNow" hidden={auction.auction_type}>
+                        <button onClick={() => handleBuyNow()} className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black">Buy Now</button>
+                    </div>
                     <img id="itemImg"></img>
-                    <div>
+                    <div hidden={auction.auction_type}>
                         {/**TODO: for onkeyup, make sure user cannot enter something less than highest bid*/}
                         <input id="bidInput" placeholder="Enter a bid..." onKeyUp={() => { }} type="number" className="rounded-md w-32 [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-1 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-1 [&::-webkit-outer-spin-button]:appearance-none text-end"></input>
                         <button onClick={() => placeBidFunction()} className="border border-gray-100">Place Bid</button> {/**TODO: in lambda, make sure user cannot go below their balance and cannot outbid themselves*/}
