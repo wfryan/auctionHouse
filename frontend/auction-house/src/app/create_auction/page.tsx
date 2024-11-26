@@ -1,8 +1,11 @@
 'use client';
 import React, { useState, ChangeEvent, Suspense } from 'react';
+
+import axios from "axios";
 import { useRouter, useSearchParams } from 'next/navigation';
-import { instance, header } from '../utils/auctionHouseApi';
-import { getUsername } from '../utils/jwt';
+const instance = axios.create({
+  baseURL: "https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse"
+})
 
 const CreateAuctionForm = () => {
   //State Declaration for Form Data
@@ -16,7 +19,13 @@ const CreateAuctionForm = () => {
   });
 
   const router = useRouter()
- 
+  const searchParams = useSearchParams();
+
+  const user = searchParams?.get('username'); // JohnDoe
+
+  const appendedUrl = '?username=' + user;
+  const username = user;
+
   const [imagePreview, setImagePreview] = useState<string>('');
   const [priceError, setPriceError] = useState<string>('');
 
@@ -105,10 +114,8 @@ const CreateAuctionForm = () => {
       base64data = await fileToBase64(formData.image);
     }
 
-    console.log(getUsername());
-
     const functionInput = JSON.stringify({
-      username: getUsername(),
+      username: username,
       itemName: formData.itemName,
       startingPrice: formData.startingPrice,
       itemDescription: formData.itemDescription,
@@ -126,7 +133,7 @@ const CreateAuctionForm = () => {
         //alert(response.data);
         console.log(response.data);
         // Redirect only after a successful response
-        router.push('/auction_dashboard')
+        router.push('/auction_dashboard' + appendedUrl)
         //window.location.href = '/pages/auction_dashboard' + appendedUrl;
       } else {
         // Handle any other status codes appropriately
