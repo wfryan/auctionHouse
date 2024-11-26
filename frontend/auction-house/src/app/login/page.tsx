@@ -2,10 +2,8 @@
 import { useState } from "react"
 import { useRouter } from 'next/navigation';
 
-import axios from "axios";
-const instance = axios.create({
-    baseURL: "https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse"
-})
+import { instance, header } from '../utils/auctionHouseApi';
+import { saveToken } from "../utils/cookie";
 
 
 const LoginPage = () => {
@@ -42,13 +40,12 @@ const LoginPage = () => {
                 //alert(response.data);
                 console.log(response.data);
                 setDE("");
-                const body = response.data.body
-                const accountType = body.type;
-                const appendedUrl = '?username=' + username;
+                const accountType = response.data.body.type;
+                saveToken(response.data.body.token);
                 if (accountType == "buyer") {
-                    router.push('/search' + appendedUrl);
+                    router.push('/search');
                 } else if (accountType == "seller") {
-                    router.push('/auction_dashboard' + appendedUrl);
+                    router.push('/auction_dashboard');
                 } else if (accountType == "admin") {
 
                 }
