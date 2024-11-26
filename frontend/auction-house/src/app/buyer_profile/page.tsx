@@ -6,10 +6,11 @@ export default function BuyerProfile(){
     const router = useRouter()
     const searchParams = useSearchParams()
     const user = searchParams?.get('username'); // JohnDoe
-    const [userInfo, setUserInfo] = useState({description: "", location: "", age: 0})
+    const [userInfo, setUserInfo] = useState({user_id: 0, description: "", location: "", age: 0})
     console.log(user)
     const appendedUrl = '?username=' + user;
     const [balance, setBalance] = useState(0)
+    const [error, setError] = useState("")
 
     const addToBalance = async () => {
       try{
@@ -37,6 +38,32 @@ export default function BuyerProfile(){
        }
     }
 
+    const closeAccount = async () => {
+      try{
+        const password = (document.getElementById("password") as HTMLInputElement).value
+        if(password != ""){
+          const resp = await fetch("https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/users/closeAccount", {
+            method: "POST",
+            body: JSON.stringify({
+              user_id: userInfo.user_id,
+              password: password
+            })
+          })
+          const respJson = await resp.json()
+          console.log(respJson)
+          setUserInfo(respJson.body.user)
+          if(respJson.body.user.is_active == 0){
+            router.push("/login")
+          }
+          else{
+            setError(respJson.body.message)
+          }
+        }
+      } catch(error){
+        console.log(error)
+      }
+    }
+    
     useEffect(() => {
       pullUserInfo()
   }, [])
@@ -96,13 +123,18 @@ export default function BuyerProfile(){
           </div>
 
           {/* Right side - Actions */}
-          <div className="flex flex-row md:flex-col justify-center md:justify-start gap-3">
+          <div className="flex flex-row md:flex-col justify-center md:justify-start gap-3 text-black">
             <button
-              onClick={() => alert("Close Account Requested")}
+              onClick={() => closeAccount()}
               className="px-4 py-2 bg-white border-2 border-black rounded-md cursor-pointer w-full md:w-40 hover:bg-red-50 text-black text-sm md:text-base"
             >
               Close Account
             </button>
+            <label htmlFor="password">Password: </label>
+            <input className = "rounded-md w-32 border-2 border-black rounded-md mx-1" type="text" id = "password"></input>
+            {error != "" &&
+              <p>{error}</p>
+            }
           </div>
         </div>
       </div>
