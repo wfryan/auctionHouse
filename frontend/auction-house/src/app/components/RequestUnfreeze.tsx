@@ -5,6 +5,12 @@ interface RequestUnfreezeProps {
   onSubmit: (reason: string, timestamp: string) => void;
 }
 
+/**
+ * 
+ * @param param0 Request unfreeze 
+ * @returns 
+ */
+
 const RequestUnfreeze: React.FC<RequestUnfreezeProps> = ({ onCancel, onSubmit }) => {
   const [reason, setReason] = useState('');
   const [timestamp] = useState(() => new Date().toISOString()); // Initialize timestamp once

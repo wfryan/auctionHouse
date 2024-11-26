@@ -3,6 +3,9 @@ import { useRouter } from 'next/navigation';
 export default function SignOutButton(){
     const router = useRouter();
 
+    /**
+     * Signout button
+     */
     const handleSignout = () => {
         removeToken();
         router.push('/login')

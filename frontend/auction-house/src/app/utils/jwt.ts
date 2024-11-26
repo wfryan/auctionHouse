@@ -1,6 +1,11 @@
 import { jwtDecode } from "jwt-decode";
 import { getToken } from "./cookie";
 
+/**
+ * 
+ * @param token jwt tokens
+ * @returns 
+ */
 export const decodeToken = (token: string): { [key: string]: any } | null => {
     try {
         return jwtDecode(token);

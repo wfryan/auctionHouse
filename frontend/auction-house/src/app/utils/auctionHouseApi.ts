@@ -1,6 +1,10 @@
 import axios from "axios";
 import { getToken } from "./cookie";
 
+
+/**
+ * generic axios instance
+ */
 export const instance = axios.create({
     baseURL: "https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse"
 })

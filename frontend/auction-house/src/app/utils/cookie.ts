@@ -1,5 +1,10 @@
 import { setCookie, parseCookies, destroyCookie } from "nookies";
 
+/**
+ * 
+ * @param token jtw token for cookies
+ */
+
 export const saveToken = (token: string) => {
     //until logout is implemented
     removeToken();

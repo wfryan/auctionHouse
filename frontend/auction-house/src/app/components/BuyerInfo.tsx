@@ -5,6 +5,9 @@ import { useEffect, useState } from 'react';
 import StatDisplay from './StatDisplay';
 export default function BuyerInfo() {
 
+    /**
+     * Buyer Info
+     */
     const user = getUsername()
     const [userInfo, setUserInfo] = useState({ username: "", balance: 0 })
     useEffect(() => {

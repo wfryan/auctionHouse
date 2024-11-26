@@ -2,6 +2,9 @@ import { useRouter } from 'next/navigation';
 export default function LoginButton(){
     const router = useRouter();
 
+    /**
+     * Login Button
+     */
     const handleLogin = () => {
         router.push('/login')
       };
