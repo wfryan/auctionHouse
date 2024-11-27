@@ -3,14 +3,24 @@ import { instance } from '../utils/auctionHouseApi';
 import { getUsername } from '../utils/jwt';
 import { useEffect, useState } from 'react';
 import StatDisplay from './StatDisplay';
+import { getToken } from '../utils/cookie';
 export default function BuyerInfo() {
 
     /**
      * Buyer Info
      */
     const user = getUsername()
+
+    const router = useRouter()
+    const [hidden, setHidden] = useState<boolean>();
+
     const [userInfo, setUserInfo] = useState({ username: "", balance: 0 })
     useEffect(() => {
+        if (getToken() != null) {
+            setHidden(true)
+        } else {
+            setHidden(false)
+        }
         pullUserInfo()
     }, [])
 
@@ -29,9 +39,13 @@ export default function BuyerInfo() {
         console.log(userInfo)
     }
 
+    const handleProfile = () => {
+        router.push("/buyer_dashboard")
+    }
+
     return (
-        <div>
-            <h1>{userInfo.username}</h1>
+        <div hidden={hidden}>
+            <button onClick={handleProfile}>{userInfo.username}</button>
             <StatDisplay bal={userInfo.balance}></StatDisplay>
         </div>
 

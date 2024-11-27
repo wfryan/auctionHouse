@@ -8,6 +8,7 @@ import SignOutButton from '../components/SignoutButton';
 
 class Bid {
   auction_id: number
+  item_id: number
   bid_id: number
   buyer_id: number
   amount: number
@@ -16,8 +17,9 @@ class Bid {
   item_name: string
   auction_status: string
 
-  constructor(aid: number, bid: number, buy: number, amt: number, btime: string, highbid: number, itemName:string, astatus: string) {
+  constructor(aid: number, iid: number, bid: number, buy: number, amt: number, btime: string, highbid: number, itemName: string, astatus: string) {
     this.auction_id = aid;
+    this.item_id = iid;
     this.bid_id = bid;
     this.buyer_id = buy;
     this.amount = amt;
@@ -96,6 +98,7 @@ const BuyerDashboard = () => {
           processedData[key] = bidData[key].map(
             (item: {
               auction_id: number;
+              item_id: number;
               bid_id: number;
               buyer_id: number;
               amount: number;
@@ -105,15 +108,16 @@ const BuyerDashboard = () => {
               auction_status: string
             }) =>
             ({
-                auction_id: item.auction_id,
-                bid_id: item.bid_id,
-                buyer_id: item.buyer_id,
-                amount: item.amount,
-                bid_time: item.bid_time, 
-                is_highest_bid: item.is_highest_bid,
-                item_name: item.item_name,
-                auction_status: item.auction_status
-        }));
+              auction_id: item.auction_id,
+              item_id: item.item_id,
+              bid_id: item.bid_id,
+              buyer_id: item.buyer_id,
+              amount: item.amount,
+              bid_time: item.bid_time,
+              is_highest_bid: item.is_highest_bid,
+              item_name: item.item_name,
+              auction_status: item.auction_status
+            }));
         });
         console.log(processedData)
         console.log("got here")
@@ -128,7 +132,7 @@ const BuyerDashboard = () => {
       }
     } catch (error) {
       console.log(error);
-      
+
     }
   }
 
@@ -165,24 +169,24 @@ const BuyerDashboard = () => {
               {/* Bidrow */}
               <div className="p-4 flex justify-between items-center">
                 <span>{item.item_name}</span>
-                {status=== bidStatus.completed &&(
+                {status === bidStatus.completed && (
                   <div>
                     <label hidden={item.auction_status !== "archived"}> Item has been purchased and fulfilled! </label>
                     <label hidden={item.auction_status === "archived"}> Item has been purchased and awaiting fulfillment! </label>
                   </div>
-                  )}
-                  <div className="space-x-2">
-                    <button
-                      onClick={() => viewItem(item.auction_id)}
-                      className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
-                    >
-                      View
-                    </button>
-                  </div>
+                )}
+                <div className="space-x-2">
+                  <button
+                    onClick={() => viewItem(item.item_id)}
+                    className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
+                  >
+                    View
+                  </button>
+                </div>
 
               </div>
             </div>
-            
+
           ))
         ) : (
           <div className="p-4 text-gray-500 italic">No Bids found</div>
@@ -197,7 +201,7 @@ const BuyerDashboard = () => {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl md:text-3xl font-bold">Buyer Dashboard</h1>
           <div className="flex space-x-4">
-          <button
+            <button
               onClick={handleSearchClick}
               className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black"
             >

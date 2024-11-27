@@ -7,6 +7,8 @@ import { getUsername } from "../utils/jwt"
 import { instance } from "../utils/auctionHouseApi"
 import BuyerInfo from "../components/BuyerInfo"
 import { getToken } from "../utils/cookie"
+import LoginButton from "../components/LoginButton"
+import SignOutButton from "../components/SignoutButton"
 
 export interface Bid { //export needed in BidDisplay
     bid_id: number,
@@ -29,7 +31,7 @@ export default function AuctionPage() {
         start_time: string
         end_time: string
         winner_id: number
-        auction_type: boolean
+        isBuyNow: number
         picture: string
     }
 
@@ -44,17 +46,7 @@ export default function AuctionPage() {
 
     const body = JSON.stringify({ username: user })
 
-    const pullUserInfo = async () => {
-        const resp = await instance.post('/users/viewUserFunds', body);
-        console.log(resp);
 
-        const userData = resp.data.body.user;
-        setUserData(prevState => ({
-            ...prevState,
-            username: getUsername(),
-            balance: userData.balance
-        }));
-    }
 
     const formatTime = () => {
         const now = new Date()
@@ -83,15 +75,18 @@ export default function AuctionPage() {
                 body: JSON.stringify(body)
             })
             const awaitRespJson = await resp.json()
-            console.log(awaitRespJson)
             const jsonItemResp = awaitRespJson.body.item
             const jsonAuctionBids = awaitRespJson.body.bids
-            console.log(jsonItemResp)
-            console.log(jsonAuctionBids)
+
+            console.log(jsonItemResp);
+
             setAuction(jsonItemResp)
+            console.log(auction)
             setBids(jsonAuctionBids)
+
             setUserData(awaitRespJson.body.user)
-            console.log(userData)
+            console.log("auction type")
+            console.log(auction?.isBuyNow)
         } catch (error) {
             setDispError(true)
             console.log(error)
@@ -102,7 +97,7 @@ export default function AuctionPage() {
     useEffect(() => {
         fetchData()
         console.log(userData)
-    }, [])
+    }, [auction?.picture])
 
     /**TODO: ?: page should refresh every 30 seconds or so correct? to refresh bids. */
 
@@ -141,12 +136,14 @@ export default function AuctionPage() {
             console.log(bids)
             if (bids.length == 0 && auction != null) {
                 if (bidValue == "" || parseInt(bidValue) < auction?.starting_bid) {
-                    throw new Error("there was an error")
+                    alert("Bid value invalid")
+                    throw new Error("Bid value invalid")
                 }
             }
             else {
                 if (bidValue == "" || parseInt(bidValue) < bids[0].amount) {
-                    throw new Error("there was an error")
+                    alert("Bid value invalid")
+                    throw new Error("Bid value invalid")
                 }
             }
             const resp = await fetch("https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/auction/placeBid", {
@@ -169,9 +166,30 @@ export default function AuctionPage() {
         }
     }
 
+    const handleSearchClick = () => {
+        router.push("/search")
+    }
+
+
     return (
         <div>
-            <StatDisplay bal={userData.balance}></StatDisplay>
+            <div>
+                <LoginButton />
+            </div>
+            <div>
+                <SignOutButton />
+            </div>
+            <div>
+                <BuyerInfo />
+            </div>
+
+            <br></br><br></br>
+            <button
+                onClick={handleSearchClick}
+                className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black"
+            >
+                Search
+            </button>
             {auction == null &&
                 <div />
             }
@@ -188,17 +206,17 @@ export default function AuctionPage() {
                     <p>status: {auction.status}</p>
                     <p>start time: {auction.start_time.toString()}</p>
                     <p>end time: {auction.end_time.toString()}</p>
-                    <div id="buyNow" hidden={auction.auction_type}>
+                    <div id="buyNow" hidden={!auction.isBuyNow}>
                         <button onClick={() => handleBuyNow()} className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black">Buy Now</button>
                     </div>
                     <img id="itemImg" src={auction.picture}></img>
-                    <div hidden={auction.auction_type}>
+                    <div hidden={!!auction.isBuyNow}>
                         {/**TODO: for onkeyup, make sure user cannot enter something less than highest bid*/}
                         <input id="bidInput" placeholder="Enter a bid..." onKeyUp={() => { }} type="number" className="rounded-md w-32 [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-1 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-1 [&::-webkit-outer-spin-button]:appearance-none text-end"></input>
                         <button onClick={() => placeBidFunction()} className="border border-gray-100">Place Bid</button>
                     </div>
 
-                    <div>
+                    <div hidden={!!auction.isBuyNow}>
                         <p>Bids</p>
                         {bids.map((bid, index) => {
                             return (

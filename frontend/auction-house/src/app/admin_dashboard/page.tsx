@@ -6,6 +6,8 @@ import { removeToken, getToken } from '../utils/cookie';
 import { decodeToken, getUsername } from '../utils/jwt';
 import SignOutButton from '../components/SignoutButton';
 import ViewAuction from '../components/ViewAuction';
+import RequestUnfreeze from '../components/RequestUnfreeze';
+import ViewRequestUnfreeze from '../components/ViewRequestUnfreeze';
 
 class Auction {
   auction_id: number
@@ -15,9 +17,12 @@ class Auction {
   item_start_time: string
   item_end_time: string
   item_information: string
+  unfreeze_request_timestamp: string
+  unfreeze_request_description: string
 
 
-  constructor(aid: number, name: string, item_seller: string, starting_bid: number, start_time: string, end_time: string, info: string) {
+
+  constructor(aid: number, name: string, item_seller: string, starting_bid: number, start_time: string, end_time: string, info: string, urt: string, urd: string) {
     this.auction_id = aid;
     this.item_name = name;
     this.item_seller = item_seller;
@@ -25,6 +30,8 @@ class Auction {
     this.item_start_time = start_time;
     this.item_end_time = end_time;
     this.item_information = info;
+    this.unfreeze_request_timestamp = urt;
+    this.unfreeze_request_description = urd;
   }
 }
 
@@ -65,10 +72,16 @@ const AdminDashboard = () => {
 
   //State to track the auction being edited
   const [viewingAuctionId, setViewingAuctionId] = useState<number | null>(null);
+  const [frozenAuctionId, setFrozenAuctionId] = useState<number | null>(null);
 
   const toggleViewForm = (auctionId: number) => {
     setViewingAuctionId((current) => (current === auctionId ? null : auctionId));
   };
+
+  const toggleUnfreezeForm = (auctionId: number) => {
+    setFrozenAuctionId((current) => (current === auctionId ? null : auctionId));
+  };
+
 
 
 
@@ -99,22 +112,27 @@ const AdminDashboard = () => {
         const processedData: Record<string, Auction[]> = {};
 
         Object.keys(auctionData).forEach(key => {
-          processedData[key] = auctionData[key].map((item: { 
-                                                        auction_id: number, 
-                                                        item_name: string, 
-                                                        item_seller_id: number,
-                                                        item_seller: string,
-                                                        item_starting_price: number,
-                                                        item_start_time: string, 
-                                                        item_end_time: string, 
-                                                        item_information: string }) => ({
+          processedData[key] = auctionData[key].map((item: {
+            auction_id: number,
+            item_name: string,
+            item_seller_id: number,
+            item_seller: string,
+            item_starting_price: number,
+            item_start_time: string,
+            item_end_time: string,
+            item_information: string
+            unfreeze_request_timestamp: string
+            unfreeze_request_description: string
+          }) => ({
             auction_id: item.auction_id,
             item_name: item.item_name,
             item_seller: item.item_seller,
             item_starting_price: item.item_starting_price,
             item_start_time: item.item_start_time,
             item_end_time: item.item_end_time,
-            item_information: item.item_information
+            item_information: item.item_information,
+            unfreeze_request_timestamp: item.unfreeze_request_timestamp,
+            unfreeze_request_description: item.unfreeze_request_description
           }));
         });
         console.log("processed-data")
@@ -134,6 +152,7 @@ const AdminDashboard = () => {
   }
 
   useEffect(() => {
+
     getAuctionInfo();
   }, []);
 
@@ -167,7 +186,7 @@ const AdminDashboard = () => {
       console.log("Here")
       const response = await instance.post('/admin/changeAuctionStatus', payload);
       console.log("NOw here")
-      
+
       const status = response.data.statusCode;
 
 
@@ -185,7 +204,7 @@ const AdminDashboard = () => {
       console.log(error)
       alert("Error publishing auction")
     }
-    
+
   }
 
   //Handler for Edit Auction Submission
@@ -247,17 +266,18 @@ const AdminDashboard = () => {
                 )}
                 {itemStatus == status.active && (
                   <div className="space-x-2">
+
                     <button
                       onClick={() => toggleViewForm(item.auction_id)}
                       className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
                     >
                       View
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleStatusChange(item.auction_id, 'frozen')}
                       className="px-3 py-1 text-sm border border-black rounded hover:bg-red-500 hover:text-white hover:border-red-500"
                     >
-                      
+
                       Freeze
                     </button>
                   </div>
@@ -270,16 +290,28 @@ const AdminDashboard = () => {
                     >
                       View
                     </button>
-                    <button 
+                    {item.unfreeze_request_description != null &&
+                      <div className="inline-block">
+                        <button
+                          onClick={() => toggleUnfreezeForm(item.auction_id)}
+                          className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
+                        >
+                          Unfreeze Request
+                        </button>
+                      </div>
+                    }
+
+
+                    <button
                       onClick={() => handleStatusChange(item.auction_id, 'active')}
                       className="px-3 py-1 text-sm border border-black rounded hover:bg-red-500 hover:text-white hover:border-red-500"
                     >
-                      
+
                       Unfreeze
                     </button>
                   </div>
                 )}
-                
+
               </div>
 
               {/* Edit form */}
@@ -294,7 +326,16 @@ const AdminDashboard = () => {
                     endTime={formatDateTime(item.item_end_time)} // Replace with actual data
                     itemDescription={item.item_information}
                     onCancel={() => setViewingAuctionId(null)} // Close the form
-                    
+
+                  />
+                </div>
+              )}
+              {frozenAuctionId === item.auction_id && (
+                <div className="p-4 bg-black-50">
+                  <ViewRequestUnfreeze
+                    onCancel={() => setFrozenAuctionId(null)}
+                    descriptionInput={item.unfreeze_request_description}
+                    timestampInput={formatDateTime(item.unfreeze_request_timestamp)}
                   />
                 </div>
               )}
@@ -313,18 +354,19 @@ const AdminDashboard = () => {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl md:text-3xl font-bold">Admin Dashboard</h1>
           <div className="flex space-x-4">
-            
-            
+
+
             <SignOutButton />
           </div>
         </div>
         <div className="space-y-6">
-          <AuctionTable title="UNLISTED" items={auctionData.unlisted} itemStatus={status.inactive} />
+          <AuctionTable title="FROZEN" items={auctionData.frozen} itemStatus={status.frozen} />
           <AuctionTable title="ACTIVE" items={auctionData.active} itemStatus={status.active} />
+          <AuctionTable title="UNLISTED" items={auctionData.unlisted} itemStatus={status.inactive} />
           <AuctionTable title="BOUGHT" items={auctionData.bought} itemStatus={status.completed} />
           <AuctionTable title="FAILED" items={auctionData.failed} itemStatus={status.failed} />
           <AuctionTable title="ARCHIVED" items={auctionData.archived} itemStatus={status.archived} />
-          <AuctionTable title="FROZEN" items={auctionData.frozen} itemStatus={status.frozen} />
+
         </div>
       </div>
     </Suspense>

@@ -2,6 +2,7 @@
 import dynamic from "next/dynamic";
 import { getAccountType } from "./utils/jwt";
 import AdminDashboardWrapper from "./admin_dashboard/page";
+import BuyerDashboardWrapper from "./buyer_dashboard/page";
 
 export default function Home() {
 
@@ -11,8 +12,10 @@ export default function Home() {
 
   const checkUserStatus = () => {
     let accountType = getAccountType();
-    if (accountType && accountType == "buyer") {
+    if (accountType == null) {
       return <Search />
+    } else if (accountType && accountType == "buyer") {
+      return <BuyerDashboardWrapper />
     } else if (accountType && accountType == "seller") {
       return <AuctionDashboardWrapper />
     } else if (accountType && accountType == "admin") {

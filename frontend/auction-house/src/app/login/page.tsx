@@ -2,6 +2,7 @@
 import { useState } from "react"
 import { useRouter } from 'next/navigation';
 import { instance } from "../utils/auctionHouseApi";
+import { saveToken } from "../utils/cookie";
 
 
 const LoginPage = () => {
@@ -40,6 +41,7 @@ const LoginPage = () => {
                 setDE("");
                 const body = response.data.body
                 const accountType = body.type;
+                saveToken(response.data.body.token)
                 if (accountType == "buyer") {
                     router.push('/buyer_dashboard');
                 } else if (accountType == "seller") {

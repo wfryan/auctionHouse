@@ -1,20 +1,31 @@
 import { useRouter } from 'next/navigation';
-export default function LoginButton(){
-    const router = useRouter();
+import { getToken } from '../utils/cookie';
+import { useEffect, useState } from 'react';
+export default function LoginButton() {
+  const router = useRouter();
+  const [hidden, setHidden] = useState<boolean>();
+  useEffect(() => {
+    if (getToken() != null) {
+      setHidden(true)
+    } else {
+      setHidden(false)
+    }
+  }, [])
+  /**
+   * Login Button
+   */
+  const handleLogin = () => {
+    router.push('/login')
+  };
 
-    /**
-     * Login Button
-     */
-    const handleLogin = () => {
-        router.push('/login')
-      };
-
-    return(
-        <button
+  return (
+    <div>
+      <button hidden={hidden}
         onClick={handleLogin}
         className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black"
       >
-      Login
+        Login
       </button>
-    )
+    </div>
+  )
 }

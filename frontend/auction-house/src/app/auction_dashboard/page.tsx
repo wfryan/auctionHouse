@@ -84,6 +84,7 @@ const AuctionDashboard = () => {
   };
 
   const publishAuction = async (auction_id: number) => {
+    setEditingAuctionId(null);
     const payload = JSON.stringify({
       auctionId: auction_id,
       token: `Bearer ${getToken()}`
@@ -194,15 +195,14 @@ const AuctionDashboard = () => {
   // Additional functionality to handle instances where there is no start time or end time for auctions.
   const formatDateTime = (dateTime: string) => {
     if (!dateTime) return '';
-    const localDate = new Date(dateTime); // This will automatically convert the UTC date to local time
+    const utcDate = new Date(dateTime);
+    if (isNaN(utcDate.getTime()) || utcDate.getFullYear() <= 1970) return '';
 
-    if (isNaN(localDate.getTime()) || localDate.getFullYear() <= 1970) return '';
-
-    const year = localDate.getFullYear();
-    const month = String(localDate.getMonth() + 1).padStart(2, '0');
-    const day = String(localDate.getDate()).padStart(2, '0');
-    const hours = String(localDate.getHours()).padStart(2, '0');
-    const minutes = String(localDate.getMinutes()).padStart(2, '0');
+    const year = utcDate.getUTCFullYear();
+    const month = String(utcDate.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(utcDate.getUTCDate()).padStart(2, '0');
+    const hours = String(utcDate.getUTCHours()).padStart(2, '0');
+    const minutes = String(utcDate.getUTCMinutes()).padStart(2, '0');
 
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
@@ -211,6 +211,7 @@ const AuctionDashboard = () => {
   //Handler for Edit Auction Submission
   const handleEditSubmit = async (editedAuction: Auction) => {
     try {
+      toggleEditForm(editedAuction.auction_id);
       const payload = JSON.stringify({
         "username": user,
         "auctionId": editedAuction.auction_id,
@@ -243,6 +244,7 @@ const AuctionDashboard = () => {
 
   //Handler for Request Unfreeze Submission
   const handleRequestUnfreeze = async (auctionId: number, reason: string, timestamp: string) => {
+    setFrozenAuctionId(null);
     try {
       const payload = JSON.stringify({
         "auctionId": auctionId,

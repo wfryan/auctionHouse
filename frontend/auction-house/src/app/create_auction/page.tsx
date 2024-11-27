@@ -132,7 +132,7 @@ const CreateAuctionForm = () => {
         console.log(base64data);
 
         const imageName = `${createAuctionResponse.data.auctionId}${formData.image?.name}`
-        const imageResponseBody = JSON.stringify({ fileContent: base64data, fileName: imageName /* send proper url to func */, fileType: formData.image?.type }); //change off hardcoding
+        const imageResponseBody = JSON.stringify({ fileContent: base64data, fileName: imageName, fileType: formData.image?.type });
         const imageResponse = await instance.post('/items/uploadImage', imageResponseBody);
 
         const uploadURLbody = JSON.stringify({ auctionItemId: createAuctionResponse.data.auctionId, imageURL: imageResponse.data.body.fileUrl })
@@ -267,9 +267,7 @@ const CreateAuctionForm = () => {
                 value={formData.auctionType}
                 onChange={(e) => handleInputChange(e)}
               >
-                <option value="" disabled>
-                  Choose an Auction Type
-                </option>
+
                 <option value="auction">Auction</option>
                 <option value="buyNow">Buy Now</option>
               </select>
