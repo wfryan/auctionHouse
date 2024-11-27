@@ -17,9 +17,10 @@ class Auction {
   item_information: string
   auction_type: string
   image_file?: File | null
+  image_url?: string
 
 
-  constructor(aid: number, name: string, starting_bid: number, start_time: string, end_time: string, info: string, auctionType: string, image_file?: File) {
+  constructor(aid: number, name: string, starting_bid: number, start_time: string, end_time: string, info: string, auctionType: string, image_file?: File, image_url?: string) {
     this.auction_id = aid;
     this.item_name = name;
     this.item_starting_price = starting_bid;
@@ -28,6 +29,7 @@ class Auction {
     this.item_information = info;
     this.auction_type = auctionType;
     this.image_file = image_file;
+    this.image_url = image_url;
   }
 }
 
@@ -163,7 +165,8 @@ const AuctionDashboard = () => {
         Object.keys(auctionData).forEach(key => {
           processedData[key] = auctionData[key].map((item: { auction_id: number, item_picture: string, item_name: string, item_starting_price: number, item_start_time: string, item_end_time: string, item_information: string, auctionType: boolean }) => ({
             auction_id: item.auction_id,
-            image_file: item.item_picture,
+            image_file: null,
+            image_url: item.item_picture,
             item_name: item.item_name,
             item_starting_price: item.item_starting_price,
             item_start_time: item.item_start_time,
@@ -252,6 +255,8 @@ const AuctionDashboard = () => {
       
       const response = await instance.post('auction/editAuctions', payload);
       let status = response.data.statusCode;
+      let body = JSON.parse(response.data.body)
+
 
       if (status === 200 && !response.data.imageAdded) {
         console.log("Auction Updated Successfully!");
@@ -264,11 +269,11 @@ const AuctionDashboard = () => {
             base64data = await fileToBase64(editedAuction.image_file);
           }
           
-          const imageName = `${editedAuction.auction_id}${editedAuction.image_file?.name}`
+          const imageName = `${body.auction_item_id}${editedAuction.image_file?.name}`
           const imageResponseBody = JSON.stringify({ fileContent: base64data, fileName: imageName /* send proper url to func */, fileType: editedAuction.image_file?.type }); //change off hardcoding
           const imageResponse = await instance.post('/items/uploadImage', imageResponseBody);
   
-          const uploadURLbody = JSON.stringify({ auctionItemId: editedAuction.auction_id, imageURL: imageResponse.data.body.fileUrl })
+          const uploadURLbody = JSON.stringify({ auctionItemId: body.auction_item_id, imageURL: imageResponse.data.body.fileUrl })
           const uploadURLResponse = await instance.post('/items/updateImageURL', uploadURLbody);
 
           console.log("Auction Updated Successfully!");
@@ -407,9 +412,15 @@ const AuctionDashboard = () => {
                         updatedAuction.auctionType,
                         updatedAuction.image || undefined
                       );
+                      console.log(item.image_file,item.image_url);
+
                       handleEditSubmit(convertedAuction);
                     }}
-                  />
+
+                    
+                  >
+                  </EditAuction>
+                  <img src={item.image_url} alt="No Preview" />
                 </div>
               )}
               {frozenAuctionId === item.auction_id && (

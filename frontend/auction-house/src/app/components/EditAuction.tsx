@@ -8,7 +8,7 @@ interface EditAuctionFormProps {
   endTime: string;
   itemDescription?: string;
   auctionType: string;
-  image?: File | null; // Optional field for image
+  image?: File | string | null; // Optional field for image
   onCancel: () => void;
   onSubmit: (updatedAuction: {
     auctionId: number;
@@ -168,7 +168,7 @@ const EditAuction: React.FC<EditAuctionFormProps> = ({
           <label className="block text-sm font-medium text-black">Item Image</label>
           <input
             type="file"
-            accept="image/*"
+            accept="images/*"
             onChange={handleImageChange}
             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm text-black"
           />
