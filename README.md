@@ -1,5 +1,49 @@
 # Auction House Group Project
 
+## Main Link [Heres the link](https://auction-house-group-java.s3.us-east-2.amazonaws.com/index.html)
+
+---------------------
+## Iteration 2 Use Cases
+
+- Buyer Add Funds
+- Buyer Close Account
+- Place Bids
+- Review Active Bids
+- Seller Close Account
+- Edit Auction/Item
+- Unpublish
+- Freeze Auction
+- Unfreeze Auction
+- Request Item Unfreeze
+- Buy Now
+- Fulfill Auction
+
+## Iteration 2 Refactors
+
+- Persistent Login sessions
+- Images moved from db to s3 bucket
+- JWT Authentication tokens
+- Dynamic routing
+
+## URLS
+- ../login
+- ../signup
+- ../auction_dashboard
+- ../buyer_dashboard
+- ../admin_dashboard
+- ../buyer_profile
+- ../seller_profile
+- ../create_auction
+- ../search
+- ../auction_item
+
+
+## Backup Run auctionHouse
+
+- initialize npm in frontend/auction-house through npm install
+- npm run dev
+
+
 ---------------------
 ## Iteration 1 Use Cases
 
