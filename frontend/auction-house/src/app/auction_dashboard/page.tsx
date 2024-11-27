@@ -16,9 +16,10 @@ class Auction {
   item_end_time: string
   item_information: string
   auction_type: string
+  image_file?: File | null
 
 
-  constructor(aid: number, name: string, starting_bid: number, start_time: string, end_time: string, info: string, auctionType: string) {
+  constructor(aid: number, name: string, starting_bid: number, start_time: string, end_time: string, info: string, auctionType: string, image_file?: File) {
     this.auction_id = aid;
     this.item_name = name;
     this.item_starting_price = starting_bid;
@@ -26,6 +27,7 @@ class Auction {
     this.item_end_time = end_time;
     this.item_information = info;
     this.auction_type = auctionType;
+    this.image_file = image_file;
   }
 }
 
@@ -159,8 +161,9 @@ const AuctionDashboard = () => {
         const processedData: Record<string, Auction[]> = {};
 
         Object.keys(auctionData).forEach(key => {
-          processedData[key] = auctionData[key].map((item: { auction_id: number, item_name: string, item_starting_price: number, item_start_time: string, item_end_time: string, item_information: string, auctionType: boolean }) => ({
+          processedData[key] = auctionData[key].map((item: { auction_id: number, item_picture: string, item_name: string, item_starting_price: number, item_start_time: string, item_end_time: string, item_information: string, auctionType: boolean }) => ({
             auction_id: item.auction_id,
+            image_file: item.item_picture,
             item_name: item.item_name,
             item_starting_price: item.item_starting_price,
             item_start_time: item.item_start_time,
@@ -207,6 +210,27 @@ const AuctionDashboard = () => {
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
+  //Converting File to Base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        if (reader.result) {
+          const base64Data = (reader.result as string).split(',')[1]; // Resolve with base64 data without the prefix
+          resolve(base64Data);
+        } else {
+          reject(new Error('File reading result is empty'));
+        }
+      };
+
+      reader.onerror = () => {
+        reject(new Error('File reading failed'));
+      };
+
+      reader.readAsDataURL(file); // Start reading the file
+    });
+  };
 
   //Handler for Edit Auction Submission
   const handleEditSubmit = async (editedAuction: Auction) => {
@@ -220,17 +244,39 @@ const AuctionDashboard = () => {
         "startTime": editedAuction.item_start_time,
         "endTime": editedAuction.item_end_time,
         "auctionType": editedAuction.auction_type === "buyNow" ? true : false,
+        "imageURL" : editedAuction.image_file?.name
       });
 
       console.log(payload);
+
+      
       const response = await instance.post('auction/editAuctions', payload);
       let status = response.data.statusCode;
 
-      if (status === 200) {
+      if (status === 200 && !response.data.imageAdded) {
         console.log("Auction Updated Successfully!");
         getAuctionInfo();
         alert("Auction Updated Succesfully!")
-      } else {
+      } else if (status === 200 && response.data.imageAdded) {
+          let base64data = null;
+
+          if (editedAuction.image_file != null) {
+            base64data = await fileToBase64(editedAuction.image_file);
+          }
+          
+          const imageName = `${editedAuction.auction_id}${editedAuction.image_file?.name}`
+          const imageResponseBody = JSON.stringify({ fileContent: base64data, fileName: imageName /* send proper url to func */, fileType: editedAuction.image_file?.type }); //change off hardcoding
+          const imageResponse = await instance.post('/items/uploadImage', imageResponseBody);
+  
+          const uploadURLbody = JSON.stringify({ auctionItemId: editedAuction.auction_id, imageURL: imageResponse.data.body.fileUrl })
+          const uploadURLResponse = await instance.post('/items/updateImageURL', uploadURLbody);
+
+          console.log("Auction Updated Successfully!");
+          getAuctionInfo();
+          alert("Auction Updated Succesfully!")
+      }
+      
+      else {
         console.log("Failed to update auction.");
         alert("Auction could not be updated.");
       }
@@ -239,6 +285,25 @@ const AuctionDashboard = () => {
       alert('There was an error updating the auction. Please try again.');
     }
   };
+
+  //Other format time
+  const formatDateTimeB = (dateTime: string) => {
+    if (!dateTime) return '';
+    
+    const utcDate = new Date(dateTime); // Parse the UTC date string into a Date object
+    
+    const year = utcDate.getUTCFullYear(); // Get UTC year
+    const month = String(utcDate.getUTCMonth() + 1).padStart(2, '0'); // Get UTC month (0-indexed, so add 1)
+    const day = String(utcDate.getUTCDate()).padStart(2, '0'); // Get UTC day
+    const hours = String(utcDate.getUTCHours()).padStart(2, '0'); // Get UTC hours
+    const minutes = String(utcDate.getUTCMinutes()).padStart(2, '0'); // Get UTC minutes
+    
+    const formattedTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+    
+    return formattedTime;
+  };
+  
+  
 
   //Handler for Request Unfreeze Submission
   const handleRequestUnfreeze = async(auctionId: number, reason: string, timestamp: string) => {
@@ -325,10 +390,11 @@ const AuctionDashboard = () => {
                     auctionId={item.auction_id}
                     itemName={item.item_name}
                     startingPrice={item.item_starting_price}
-                    startTime={formatDateTime(item.item_start_time)}
-                    endTime={formatDateTime(item.item_end_time)}
+                    startTime={formatDateTimeB(item.item_start_time)}
+                    endTime={formatDateTimeB(item.item_end_time)}
                     itemDescription={item.item_information}
                     auctionType={item.auction_type}
+                    image={item.image_file}
                     onCancel={() => setEditingAuctionId(null)} // Close the form
                     onSubmit={(updatedAuction) => {
                       const convertedAuction = new Auction(
@@ -338,7 +404,8 @@ const AuctionDashboard = () => {
                         updatedAuction.startTime,
                         updatedAuction.endTime,
                         updatedAuction.itemDescription,
-                        updatedAuction.auctionType
+                        updatedAuction.auctionType,
+                        updatedAuction.image || undefined
                       );
                       handleEditSubmit(convertedAuction);
                     }}
