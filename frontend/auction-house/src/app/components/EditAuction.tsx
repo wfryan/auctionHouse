@@ -59,22 +59,6 @@ const EditAuction: React.FC<EditAuctionFormProps> = ({
     });
   };
 
-  // Function to format the timestamp to EST
-  const formatDateTime = (dateTime: string) => {
-    if (!dateTime) return '';
-    const utcDate = new Date(dateTime);
-    if (isNaN(utcDate.getTime()) || utcDate.getFullYear() <= 1970) return '';
-
-    const estDate = new Date(utcDate.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-    const year = estDate.getFullYear();
-    const month = String(estDate.getMonth() + 1).padStart(2, '0');
-    const day = String(estDate.getDate()).padStart(2, '0');
-    const hours = String(estDate.getHours()).padStart(2, '0');
-    const minutes = String(estDate.getMinutes()).padStart(2, '0');
-
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
-
   const handlePriceChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
     const rawValue = value.replace(/[$,\s]/g, '');

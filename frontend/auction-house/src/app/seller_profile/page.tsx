@@ -1,18 +1,21 @@
 'use client';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import React, { Suspense, useEffect, useState } from 'react';
 import { getUsername } from '../utils/jwt';
 
 const SellerProfile = () => {
 
   const router = useRouter();
-  let user = getUsername()
+  const user = getUsername()
 
   const [error, setError] = useState("");
-  const [username, setUsername] = useState(null)
+  const [username, setUsername] = useState("")
   const [userInfo, setUserInfo] = useState({ user_id: 0, description: "", location: "", age: 0 });
   useEffect(() => {
-    setUsername(user)
+    if (user != null) {
+      setUsername(user)
+    }
+
     pullUserInfo()
   }, [])
 

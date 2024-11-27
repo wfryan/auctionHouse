@@ -11,7 +11,7 @@ export default function Home() {
   const Search = dynamic(() => import("./search/page"), { ssr: false });
 
   const checkUserStatus = () => {
-    let accountType = getAccountType();
+    const accountType = getAccountType();
     if (accountType == null) {
       return <Search />
     } else if (accountType && accountType == "buyer") {

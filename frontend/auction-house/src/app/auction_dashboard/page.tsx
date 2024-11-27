@@ -1,8 +1,8 @@
 'use client';
 import React, { Suspense, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { instance, header } from '../utils/auctionHouseApi';
-import { removeToken, getToken } from '../utils/cookie';
+import { useRouter } from 'next/navigation';
+import { instance } from '../utils/auctionHouseApi';
+import { getToken } from '../utils/cookie';
 import { decodeToken, getUsername } from '../utils/jwt';
 import SignOutButton from '../components/SignoutButton';
 import EditAuction from '../components/EditAuction';
@@ -164,7 +164,7 @@ const AuctionDashboard = () => {
   };
 
   const getAuctionInfo = async () => {
-    let tkn = getToken();
+    const tkn = getToken();
     if (tkn !== null) {
       console.log(decodeToken(tkn))
     }
@@ -251,7 +251,7 @@ const AuctionDashboard = () => {
 
       console.log(payload);
       const response = await instance.post('auction/editAuctions', payload);
-      let status = response.data.statusCode;
+      const status = response.data.statusCode;
 
       if (status === 200) {
         console.log("Auction Updated Successfully!");
@@ -279,7 +279,7 @@ const AuctionDashboard = () => {
       });
 
       const response = await instance.post('auction/requestUnfreeze', payload);
-      let status = response.data.statusCode;
+      const status = response.data.statusCode;
 
       if (status === 200) {
         console.log("Request Submitted Succesfully");

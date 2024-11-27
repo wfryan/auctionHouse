@@ -1,12 +1,12 @@
 'use client'
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { getUsername } from "../utils/jwt"
 
 export default function BuyerProfile() {
   const router = useRouter()
-  let user = getUsername()
-  const [username, setUsername] = useState(null)
+  const user = getUsername()
+  const [username, setUsername] = useState("")
   const [userInfo, setUserInfo] = useState({ user_id: 0, description: "", location: "", age: 0 })
 
   const [balance, setBalance] = useState(0)
@@ -65,7 +65,10 @@ export default function BuyerProfile() {
   }
 
   useEffect(() => {
-    setUsername(user)
+    if (user != null) {
+      setUsername(user)
+    }
+
     pullUserInfo()
   }, [])
 

@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface ViewAuctionFormProps {
   auctionId: number;
@@ -8,14 +8,13 @@ interface ViewAuctionFormProps {
   startTime: string;
   endTime: string;
   itemDescription?: string;
-  
+
   onCancel: () => void;
 
 }
 
 const ViewAuction: React.FC<ViewAuctionFormProps> = ({
   auctionId,
-  itemSeller,
   itemName,
   startingPrice,
   startTime,
@@ -28,11 +27,17 @@ const ViewAuction: React.FC<ViewAuctionFormProps> = ({
   const [updatedStartTime, setUpdatedStartTime] = useState(startTime);
   const [updatedEndTime, setUpdatedEndTime] = useState(endTime);
   const [updatedExtraInfo, setUpdatedExtraInfo] = useState(itemDescription);
-  const [priceError, setPriceError] = useState<string>('');
 
-  
+  useEffect(() => {
+    setUpdatedItemName(itemName)
+    setUpdatedStartingPrice(startingPrice);
+    setUpdatedStartTime(startTime);
+    setUpdatedEndTime(endTime);
+    setUpdatedExtraInfo(itemDescription);
 
-  
+  }, [])
+
+
   const formatPrice = (value: number) => {
     if (!value && value !== 0) return '$0';
     return `$${value.toLocaleString()}`;
@@ -94,7 +99,7 @@ const ViewAuction: React.FC<ViewAuctionFormProps> = ({
       </form>
     </div>
   );
-  
+
 };
 
 export default ViewAuction;

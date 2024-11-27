@@ -1,8 +1,7 @@
 'use client'
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import BidDisplay from "../components/BidDisplay"
-import StatDisplay from "../components/StatDisplay"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { getUsername } from "../utils/jwt"
 import { instance } from "../utils/auctionHouseApi"
 import BuyerInfo from "../components/BuyerInfo"
@@ -19,7 +18,7 @@ export interface Bid { //export needed in BidDisplay
     username: string,
 }
 
-export default function AuctionPage() {
+function AuctionPage() {
     interface Auction {
         auction_id: number
         item_name: string
@@ -44,7 +43,6 @@ export default function AuctionPage() {
     const [userData, setUserData] = useState({ balance: 0, user_id: 0 })
     const [dispError, setDispError] = useState(false) //error unused atm
 
-    const body = JSON.stringify({ username: user })
 
 
 
@@ -234,4 +232,15 @@ export default function AuctionPage() {
             }
         </div >
     )
+
 }
+
+const AuctionPageWrapper = () => {
+    return (
+        <Suspense fallback={<div>Loading Auction...</div>}>
+            <AuctionPage />
+        </Suspense>
+    );
+}
+
+export default AuctionPageWrapper

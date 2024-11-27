@@ -1,4 +1,4 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface RequestUnfreezeProps {
   onCancel: () => void;
@@ -17,24 +17,13 @@ const ViewRequestUnfreeze: React.FC<RequestUnfreezeProps> = ({ onCancel, descrip
   const [timestamp] = useState(timestampInput); // Initialize timestamp once
   const [reasonError, setReasonError] = useState<string>('');
 
+  useEffect(() => {
+    setDescription(descriptionInput)
+    setReasonError('')
+  }, [])
+
   // Function to handle form submission
 
-
-  // Function to format the timestamp to EST
-  const formatDateTime = (dateTime: string) => {
-    if (!dateTime) return '';
-    const utcDate = new Date(dateTime);
-    if (isNaN(utcDate.getTime()) || utcDate.getFullYear() <= 1970) return '';
-
-    const estDate = new Date(utcDate.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-    const year = estDate.getFullYear();
-    const month = String(estDate.getMonth() + 1).padStart(2, '0');
-    const day = String(estDate.getDate()).padStart(2, '0');
-    const hours = String(estDate.getHours()).padStart(2, '0');
-    const minutes = String(estDate.getMinutes()).padStart(2, '0');
-
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
 
   return (
     <div className="p-4 border rounded-md bg-white shadow-md">

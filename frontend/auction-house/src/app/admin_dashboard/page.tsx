@@ -1,12 +1,10 @@
 'use client';
 import React, { Suspense, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { instance, header } from '../utils/auctionHouseApi';
-import { removeToken, getToken } from '../utils/cookie';
-import { decodeToken, getUsername } from '../utils/jwt';
+import { instance } from '../utils/auctionHouseApi';
+import { getToken } from '../utils/cookie';
+import { decodeToken } from '../utils/jwt';
 import SignOutButton from '../components/SignoutButton';
 import ViewAuction from '../components/ViewAuction';
-import RequestUnfreeze from '../components/RequestUnfreeze';
 import ViewRequestUnfreeze from '../components/ViewRequestUnfreeze';
 
 class Auction {
@@ -53,10 +51,6 @@ interface AuctionTableProps {
 
 
 const AdminDashboard = () => {
-  const router = useRouter();
-
-
-  const user = getUsername()
 
   // Dummy data for different auction categories
 
@@ -91,7 +85,7 @@ const AdminDashboard = () => {
 
     console.log(getToken())
 
-    let tkn = getToken();
+    const tkn = getToken();
     if (tkn !== null) {
       console.log(decodeToken(tkn))
     }
@@ -207,39 +201,9 @@ const AdminDashboard = () => {
 
   }
 
-  //Handler for Edit Auction Submission
-  const handleEditSubmit = async (editedAuction: Auction, getAuctionInfo: () => void) => {
-    try {
-      const payload = JSON.stringify({
-        "username": user,
-        "auctionId": editedAuction.auction_id,
-        "itemName": editedAuction.item_name,
-        "itemDescription": editedAuction.item_information,
-        "startingPrice": editedAuction.item_starting_price,
-        "startTime": editedAuction.item_start_time,
-        "endTime": editedAuction.item_end_time
-      });
-
-      console.log(payload);
-      const response = await axios.post('https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/auction/editAuctions', payload);
-      let status = response.data.statusCode;
-
-      if (status === 200) {
-        console.log("Auction Updated Successfully!");
-        getAuctionInfo();
-        alert("Auction Updated Succesfully!")
-      } else {
-        console.log("Failed to update auction.");
-        alert("Auction could not be updated.");
-      }
-    } catch (error) {
-      console.log("Error Submitting the form: ", error);
-      alert('There was an error updating the auction. Please try again.');
-    }
-  };
-
   // Component for individual auction table
   const AuctionTable: React.FC<AuctionTableProps> = ({ title, items, itemStatus }) => (
+
     <div className="mb-6">
       <div className="bg-gray-100 p-3 rounded-t-md font-medium text-black">
         {title}

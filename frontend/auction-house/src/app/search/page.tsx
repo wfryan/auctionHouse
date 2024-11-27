@@ -1,9 +1,7 @@
 'use client'
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 import AuctionItemClickable from "@/app/components/AuctionItemClickable"
-import { useRouter, useSearchParams } from 'next/navigation'
-import StatDisplay from "../components/StatDisplay"
-import { getUsername } from "../utils/jwt"
+import { useRouter } from 'next/navigation'
 import BuyerInfo from "../components/BuyerInfo"
 import SignOutButton from "../components/SignoutButton"
 import { getToken } from "../utils/cookie"
@@ -17,7 +15,6 @@ export interface AuctionItem {
 
 export default function Search() {
     const router = useRouter()
-    const [userInfo, setUserInfo] = useState({ balance: 0 })
     const [auctions, setAuctions] = useState<AuctionItem[]>([])
     const [dispError, setDispError] = useState(false)
     const input = useRef<HTMLInputElement>(null)
@@ -54,9 +51,6 @@ export default function Search() {
         router.push("/auction_page")
     }
 
-    const handleSignupClick = () => {
-        router.push("/login")
-    };
 
     return (
         <div>

@@ -1,12 +1,18 @@
 import { jwtDecode } from "jwt-decode";
 import { getToken } from "./cookie";
 
+
+interface DecodedToken {
+    userId: number;
+    username: string;
+    account_type: string;
+}
 /**
  * 
  * @param token jwt tokens
  * @returns 
  */
-export const decodeToken = (token: string): { [key: string]: any } | null => {
+export const decodeToken = (token: string): DecodedToken | null => {
     try {
         return jwtDecode(token);
     } catch (error) {
@@ -15,19 +21,24 @@ export const decodeToken = (token: string): { [key: string]: any } | null => {
     }
 };
 
-export const isTokenExpired = (token: string): boolean => {
-    const decoded = decodeToken(token);
-    if (!decoded) return true;
+// export const isTokenExpired = (token: string): boolean => {
+//     const decoded = jwtDecode(token);
+//     if (!decoded) return true;
 
-    const currentTime = Date.now() / 1000;
-    return decoded.exp < currentTime;
-};
+//     const currentTime = Date.now() / 1000;
+//     if (decoded.exp) {
+//         return decoded.exp < currentTime;
+//     } else {
+//         return true;
+//     }
+
+// };
 
 export const getUsername = () => {
 
-    let token = getToken();
+    const token = getToken();
     if (token) {
-        let decodedToken = decodeToken(token);
+        const decodedToken = decodeToken(token);
         if (decodedToken) {
             return decodedToken.username;
         } else {
@@ -39,9 +50,9 @@ export const getUsername = () => {
 
 export const getAccountType = () => {
 
-    let token = getToken();
+    const token = getToken();
     if (token) {
-        let decodedToken = decodeToken(token);
+        const decodedToken = decodeToken(token);
         if (decodedToken) {
             return decodedToken.account_type;
         } else {

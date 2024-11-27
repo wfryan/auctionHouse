@@ -2,6 +2,19 @@
 
 ## Main Link [Heres the link](https://auction-house-group-java.s3.us-east-2.amazonaws.com/index.html)
 
+Accounts:
+Admin-
+Username: admin
+password: password
+
+Seller:
+Username: seller
+Password: password
+
+Buyer: 
+Username: buyer
+Password: password
+
 ---------------------
 ## Iteration 2 Use Cases
 

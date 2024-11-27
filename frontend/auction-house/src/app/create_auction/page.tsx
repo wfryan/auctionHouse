@@ -1,9 +1,8 @@
 'use client';
 import React, { useState, ChangeEvent, Suspense } from 'react';
 
-import axios from "axios";
-import { useRouter, useSearchParams } from 'next/navigation';
-import { instance, header } from '../utils/auctionHouseApi';
+import { useRouter } from 'next/navigation';
+import { instance } from '../utils/auctionHouseApi';
 import { getUsername } from '../utils/jwt';
 
 
@@ -137,7 +136,7 @@ const CreateAuctionForm = () => {
         const imageResponse = await instance.post('/items/uploadImage', imageResponseBody);
 
         const uploadURLbody = JSON.stringify({ auctionItemId: createAuctionResponse.data.auctionId, imageURL: imageResponse.data.body.fileUrl })
-        const uploadURLResponse = await instance.post('/items/updateImageURL', uploadURLbody);
+        await instance.post('/items/updateImageURL', uploadURLbody);
       }
       const status = createAuctionResponse.data.statusCode;
       console.log(createAuctionResponse);

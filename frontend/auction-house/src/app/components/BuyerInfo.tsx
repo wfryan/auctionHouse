@@ -9,13 +9,16 @@ export default function BuyerInfo() {
     /**
      * Buyer Info
      */
-    const user = getUsername()
 
     const router = useRouter()
     const [hidden, setHidden] = useState<boolean>();
+    const [user, setUser] = useState("")
 
     const [userInfo, setUserInfo] = useState({ username: "", balance: 0 })
     useEffect(() => {
+        const tempUser = getUsername();
+        if (tempUser != null || tempUser != undefined)
+            setUser(tempUser)
         if (getToken() != null) {
             setHidden(true)
         } else {
@@ -31,9 +34,8 @@ export default function BuyerInfo() {
         console.log(resp);
 
         const userData = resp.data.body.user;
-        setUserInfo(prevState => ({
-            ...prevState,
-            username: getUsername(),
+        setUserInfo(({
+            username: user,
             balance: userData.balance
         }));
         console.log(userInfo)

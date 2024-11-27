@@ -1,8 +1,8 @@
 'use client';
 import React, { Suspense, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { instance, header } from '../utils/auctionHouseApi';
-import { removeToken, getToken } from '../utils/cookie';
+import { useRouter } from 'next/navigation';
+import { instance } from '../utils/auctionHouseApi';
+import { getToken } from '../utils/cookie';
 import { decodeToken, getUsername } from '../utils/jwt';
 import SignOutButton from '../components/SignoutButton';
 
@@ -72,7 +72,7 @@ const BuyerDashboard = () => {
   }
 
   const getBidInfo = async () => {
-    let tkn = getToken();
+    const tkn = getToken();
     if (tkn !== null) {
       console.log(decodeToken(tkn))
     }
@@ -140,21 +140,6 @@ const BuyerDashboard = () => {
     getBidInfo();
   }, []);
 
-  // Format the start and end times to match the input type "datetime-local"
-  // Additional functionality to handle instances where there is no start time or end time for auctions.
-  const formatDateTime = (dateTime: string) => {
-    if (!dateTime) return '';
-    const utcDate = new Date(dateTime);
-    if (isNaN(utcDate.getTime()) || utcDate.getFullYear() <= 1970) return '';
-
-    const year = utcDate.getUTCFullYear();
-    const month = String(utcDate.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(utcDate.getUTCDate()).padStart(2, '0');
-    const hours = String(utcDate.getUTCHours()).padStart(2, '0');
-    const minutes = String(utcDate.getUTCMinutes()).padStart(2, '0');
-
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
 
   // Component for individual auction table
   const BidTable: React.FC<BidTableProps> = ({ title, items, status }) => (
