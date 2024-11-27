@@ -114,7 +114,7 @@ export default function AuctionPage() {
             if (status === 200) {
                 console.log(response.data)
                 alert("Awaiting fulfillment!")
-                router.push('/buyer_profile')
+                router.push('/buyer_dashboard')
             }
             else {
                 console.log(`Error: ${response.data}`)

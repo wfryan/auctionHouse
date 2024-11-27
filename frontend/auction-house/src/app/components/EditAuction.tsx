@@ -8,7 +8,7 @@ interface EditAuctionFormProps {
   endTime: string;
   itemDescription?: string;
   auctionType: string
-  
+
   onCancel: () => void;
 
   onSubmit: (updatedAuction: {
@@ -43,7 +43,7 @@ const EditAuction: React.FC<EditAuctionFormProps> = ({
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    
+
     if (priceError) {
       return;
     }
@@ -59,10 +59,26 @@ const EditAuction: React.FC<EditAuctionFormProps> = ({
     });
   };
 
+  // Function to format the timestamp to EST
+  const formatDateTime = (dateTime: string) => {
+    if (!dateTime) return '';
+    const utcDate = new Date(dateTime);
+    if (isNaN(utcDate.getTime()) || utcDate.getFullYear() <= 1970) return '';
+
+    const estDate = new Date(utcDate.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+    const year = estDate.getFullYear();
+    const month = String(estDate.getMonth() + 1).padStart(2, '0');
+    const day = String(estDate.getDate()).padStart(2, '0');
+    const hours = String(estDate.getHours()).padStart(2, '0');
+    const minutes = String(estDate.getMinutes()).padStart(2, '0');
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   const handlePriceChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
     const rawValue = value.replace(/[$,\s]/g, '');
-    
+
     if (rawValue === '') {
       setUpdatedStartingPrice(0);
       setPriceError('');
@@ -157,22 +173,22 @@ const EditAuction: React.FC<EditAuctionFormProps> = ({
             onChange={(e) => setUpdatedExtraInfo(e.target.value)}
             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm text-black"
           />
-      <label htmlFor="dropdown" className="block text-sm font-medium text-black">
-    Item Type
-  </label>
-  <select
-    id="dropdown"
-    name="auctionType"
-    className="w-full p-2 sm:p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-black"
-    value={updatedAuctionType}
-    onChange={(e) => setUpdatedAuctionType(e.target.value)}
-  >
-    <option value="" disabled>
-      Choose an Auction Type
-    </option>
-    <option value="auction">Auction</option>
-    <option value="buyNow">Buy Now</option>
-  </select>
+          <label htmlFor="dropdown" className="block text-sm font-medium text-black">
+            Item Type
+          </label>
+          <select
+            id="dropdown"
+            name="auctionType"
+            className="w-full p-2 sm:p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-black"
+            value={updatedAuctionType}
+            onChange={(e) => setUpdatedAuctionType(e.target.value)}
+          >
+            <option value="" disabled>
+              Choose an Auction Type
+            </option>
+            <option value="auction">Auction</option>
+            <option value="buyNow">Buy Now</option>
+          </select>
         </div>
         <div className="flex space-x-4">
           <button

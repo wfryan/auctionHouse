@@ -116,7 +116,8 @@ const CreateAuctionForm = () => {
       itemDescription: formData.itemDescription,
       startTime: formData.startTime,
       endTime: formData.endTime,
-      image: formData.image?.name
+      image: formData.image?.name,
+      auctionType: formData.auctionType === "buyNow" ? true : false,
     });
 
     try {

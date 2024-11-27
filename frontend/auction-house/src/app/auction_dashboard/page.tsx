@@ -99,7 +99,32 @@ const AuctionDashboard = () => {
       }
       console.log(response)
       if (status === 418) {
-        //router.push('/login')
+        router.push('/login')
+      }
+    }
+    catch (error) {
+      console.log(error)
+      alert("Error publishing auction")
+    }
+
+  };
+
+  const handleFulfill = async (auction_id: number) => {
+    const payload = JSON.stringify({
+      auctionId: auction_id,
+      token: `Bearer ${getToken()}`
+    });
+
+    console.log(auction_id)
+    try {
+      const response = await instance.post('/auction/fulfill', payload);
+      const status = response.data.statusCode;
+      if (status === 200) {
+        getAuctionInfo();
+      }
+      console.log(response)
+      if (status === 418) {
+        router.push('/login')
       }
     }
     catch (error) {
@@ -128,7 +153,7 @@ const AuctionDashboard = () => {
       }
       console.log(response)
       if (status === 418) {
-        //router.push('/login')
+        router.push('/login')
       }
     }
     catch (error) {
@@ -317,6 +342,16 @@ const AuctionDashboard = () => {
                       className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
                     >
                       Request Unfreeze
+                    </button>
+                  </div>
+                )}
+                {itemStatus === status.Completed && (
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => handleFulfill(item.auction_id)}
+                      className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
+                    >
+                      Fulfill Item
                     </button>
                   </div>
                 )}

@@ -1,25 +1,66 @@
 'use client';
 import { useRouter, useSearchParams } from 'next/navigation';
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { getUsername } from '../utils/jwt';
 
 const SellerProfile = () => {
 
   const router = useRouter();
+  let user = getUsername()
+
+  const [error, setError] = useState("");
+  const [username, setUsername] = useState(null)
+  const [userInfo, setUserInfo] = useState({ user_id: 0, description: "", location: "", age: 0 });
+  useEffect(() => {
+    setUsername(user)
+    pullUserInfo()
+  }, [])
 
 
   // Dummy data, eventually use Lambda Functions to retrieve information
-  const userData = {
-    username: getUsername(),
-    description: "",
-    balance: ""
-  };
+
 
 
   // Function to go back to the previous page
   const handleBackButton = () => {
     router.push('/auction_dashboard')
   };
+
+  const pullUserInfo = async () => {
+    const resp = await fetch("https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/users/viewUserFunds", {
+      method: "POST",
+      body: JSON.stringify({ username: user })
+    })
+    const jsonResp = await resp.json()
+    console.log(jsonResp.body)
+    setUserInfo(jsonResp.body.user)
+  }
+
+  const closeAccount = async () => {
+    try {
+      const password = (document.getElementById("password") as HTMLInputElement).value
+      if (password != "") {
+        const resp = await fetch("https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/users/closeAccount", {
+          method: "POST",
+          body: JSON.stringify({
+            user_id: userInfo.user_id,
+            password: password
+          })
+        })
+        const respJson = await resp.json()
+        console.log(respJson)
+        setUserInfo(respJson.body.user)
+        if (respJson.body.user.is_active == 0) {
+          router.push("/login")
+        }
+        else {
+          setError(respJson.body.message)
+        }
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   return (
     <div className="p-4 md:p-5 font-sans max-w-7xl mx-auto">
@@ -43,33 +84,34 @@ const SellerProfile = () => {
           {/* Left side - User Information */}
           <div className="w-full md:w-3/5 space-y-3">
             <div className="bg-gray-100 p-3 rounded-md text-black">
-              {"Name: " + userData.username}
+              {"Name: " + username}
             </div>
 
             <div className="bg-gray-100 p-3 rounded-md min-h-16 text-black">
-              {"Description: " + userData.description}
+              {"Description: " + userInfo.description}
             </div>
 
-            <div className="bg-gray-100 p-3 rounded-md text-black">
-              {"Balance: " + userData.balance}
-            </div>
+            {/* <div className="bg-gray-100 p-3 rounded-md text-black">
+              {"Balance: " + userInfo.balance}
+            </div> */}
           </div>
 
           {/* Right side - Actions */}
           <div className="flex flex-row md:flex-col justify-center md:justify-start gap-3">
-            <button
-              onClick={() => alert("Unfreeze Requested")}
-              className="px-4 py-2 bg-white border-2 border-black rounded-md cursor-pointer w-full md:w-40 hover:bg-blue-50 text-black text-sm md:text-base"
-            >
-              Unfreeze Request
-            </button>
 
-            <button
-              onClick={() => alert("Close Account Requested")}
-              className="px-4 py-2 bg-white border-2 border-black rounded-md cursor-pointer w-full md:w-40 hover:bg-red-50 text-black text-sm md:text-base"
-            >
-              Close Account
-            </button>
+            <div className="flex flex-row md:flex-col justify-center md:justify-start gap-3 text-black">
+              <button
+                onClick={() => closeAccount()}
+                className="px-4 py-2 bg-white border-2 border-black rounded-md cursor-pointer w-full md:w-40 hover:bg-red-50 text-black text-sm md:text-base"
+              >
+                Close Account
+              </button>
+              <label htmlFor="password">Password: </label>
+              <input className="rounded-md w-32 border-2 border-black rounded-md mx-1" type="text" id="password"></input>
+              {error != "" &&
+                <p>{error}</p>
+              }
+            </div>
           </div>
         </div>
       </div>
