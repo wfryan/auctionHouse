@@ -7,18 +7,20 @@ interface EditAuctionFormProps {
   startTime: string;
   endTime: string;
   itemDescription?: string;
-  auctionType: string
-
+  auctionType: string;
+  image?: File | string | null; // Optional field for image
+  imageUrl?: string
   onCancel: () => void;
 
   onSubmit: (updatedAuction: {
-    auctionId: number;  // Added auctionId to the submission interface
+    auctionId: number;
     itemName: string;
     startingPrice: number;
     startTime: string;
     endTime: string;
     itemDescription: string;
-    auctionType: string
+    auctionType: string;
+    image?: File | null; // Optional field for image
   }) => void;
 }
 
@@ -30,6 +32,8 @@ const EditAuction: React.FC<EditAuctionFormProps> = ({
   endTime,
   itemDescription = '',
   auctionType,
+  image,
+  imageUrl,
   onCancel,
   onSubmit,
 }) => {
@@ -38,24 +42,40 @@ const EditAuction: React.FC<EditAuctionFormProps> = ({
   const [updatedStartTime, setUpdatedStartTime] = useState(startTime);
   const [updatedEndTime, setUpdatedEndTime] = useState(endTime);
   const [updatedExtraInfo, setUpdatedExtraInfo] = useState(itemDescription);
+  const [updatedAuctionType, setUpdatedAuctionType] = useState(auctionType);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(imageUrl || null);
   const [priceError, setPriceError] = useState<string>('');
-  const [updatedAuctionType, setUpdatedAuctionType] = useState(auctionType)
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Set the selected file
+      setSelectedImage(file);
+
+      // Create a preview of the new file
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-
-    if (priceError) {
-      return;
-    }
+    if (priceError) return;
 
     onSubmit({
-      auctionId,  // Include auctionId in the submission
+      auctionId,
       itemName: updatedItemName,
       startingPrice: updatedStartingPrice,
       startTime: updatedStartTime,
       endTime: updatedEndTime,
       itemDescription: updatedExtraInfo,
-      auctionType: updatedAuctionType
+      auctionType: updatedAuctionType,
+      image: selectedImage, // Include the image file in the submission
     });
   };
 
@@ -87,6 +107,8 @@ const EditAuction: React.FC<EditAuctionFormProps> = ({
     if (!value && value !== 0) return '$0';
     return `$${value.toLocaleString()}`;
   };
+
+  
 
   return (
     <div className="p-4 border rounded-md bg-white shadow-md">
@@ -173,6 +195,22 @@ const EditAuction: React.FC<EditAuctionFormProps> = ({
             <option value="auction">Auction</option>
             <option value="buyNow">Buy Now</option>
           </select>
+        </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-black">Item Image</label>
+          <input
+            type="file"
+            accept="images/*"
+            onChange={handleImageChange}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm text-black"
+          />
+            {previewImage && (
+              <img 
+                src={previewImage} 
+                alt="Preview" 
+                className="w-32 h-32 object-contain mt-2" 
+              />
+            )}
         </div>
         <div className="flex space-x-4">
           <button
