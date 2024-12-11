@@ -6,6 +6,7 @@ import { decodeToken } from '../utils/jwt';
 import SignOutButton from '../components/SignoutButton';
 import ViewAuction from '../components/ViewAuction';
 import ViewRequestUnfreeze from '../components/ViewRequestUnfreeze';
+import { parse } from 'json2csv';
 
 class Auction {
   auction_id: number
@@ -201,6 +202,67 @@ const AdminDashboard = () => {
 
   }
 
+
+  const generateForensicsCSV = async () => {
+    try {
+      // Fetch the data from the backend
+      const response = await instance.post('/admin/getForensics', JSON.stringify({
+        token: `${getToken()}`
+      }));
+
+      // Log the full response to see the structure
+      console.log("Full Response:", response);
+
+      // Parse the response body since it's a string
+      const responseBody = JSON.parse(response.data.body);
+
+      console.log(responseBody)
+  
+      // Check if the response is successful and contains data
+      if (response.data.statusCode === 200 && responseBody.data && Array.isArray(responseBody.data)) {
+        const auctionData = responseBody.data;
+        
+        // Log the fetched data to verify its structure
+        console.log("Fetched Data:", auctionData);
+  
+        // Check if auctionData is valid and not empty
+        if (!auctionData || auctionData.length === 0) {
+          console.error("No data available to generate CSV");
+          return;
+        }
+  
+        //The fields (columns) you want in the CSV
+        const fields = [
+          "auction_item_id", "item_name", "item_information", "item_picture", "auction_id", "starting_bid", "highest_bid", "status", "start_time",
+          "end_time", "winner_id", "winning_bid_amount", "winner_username", "winner_location",
+          "seller_username", "seller_location", "seller_balance", "bid_id", "bid_amount", 
+          "bid_time", "bid_is_buy_now", "bidder_username", "bidder_location"
+        ];
+  
+        // Convert auction data to CSV
+        const csv = parse(auctionData, { fields });
+  
+        // Create a Blob object with CSV data
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+  
+        // Create a link element to trigger the download
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'forensics_report.csv';  // Set the file name
+        document.body.appendChild(link);
+        link.click();  // Trigger the download
+        document.body.removeChild(link);  // Clean up the link
+  
+        alert("CSV file generated and download complete!");
+      } else {
+        console.error("Failed to fetch valid data for the CSV.");
+      }
+    } catch (error) {
+      console.error('Error generating forensics CSV:', error);
+    }
+  };
+
   // Component for individual auction table
   const AuctionTable: React.FC<AuctionTableProps> = ({ title, items, itemStatus }) => (
 
@@ -318,8 +380,9 @@ const AdminDashboard = () => {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl md:text-3xl font-bold">Admin Dashboard</h1>
           <div className="flex space-x-4">
-
-
+            <button onClick = {generateForensicsCSV} className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black">
+              Generate Forensics
+            </button>
             <SignOutButton />
           </div>
         </div>
