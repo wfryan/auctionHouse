@@ -108,7 +108,7 @@ const EditAuction: React.FC<EditAuctionFormProps> = ({
     return `$${value.toLocaleString()}`;
   };
 
-  
+
 
   return (
     <div className="p-4 border rounded-md bg-white shadow-md">
@@ -200,17 +200,17 @@ const EditAuction: React.FC<EditAuctionFormProps> = ({
           <label className="block text-sm font-medium text-black">Item Image</label>
           <input
             type="file"
-            accept="images/*"
+            accept="image/*"
             onChange={handleImageChange}
             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm text-black"
           />
-            {previewImage && (
-              <img 
-                src={previewImage} 
-                alt="Preview" 
-                className="w-32 h-32 object-contain mt-2" 
-              />
-            )}
+          {previewImage && (
+            <img
+              src={previewImage}
+              alt="Preview"
+              className="w-32 h-32 object-contain mt-2"
+            />
+          )}
         </div>
         <div className="flex space-x-4">
           <button

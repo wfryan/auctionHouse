@@ -98,6 +98,10 @@ const CreateAuctionForm = () => {
     });
   };
 
+  const handleBack = () => {
+    router.push('/auction_dashboard')
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (priceError) {
@@ -161,7 +165,15 @@ const CreateAuctionForm = () => {
   return (
     <div className="min-h-screen p-4 sm:p-6 md:p-8">
       <div className="max-w-3xl mx-auto rounded-lg shadow-sm p-4 sm:p-6 md:p-8">
-        <div className="mb-6">
+        <div className="mb-6 relative">
+          {/* Back to Dashboard Button */}
+          <button
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 w-full sm:w-auto px-3 py-3 sm:py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black font-medium transition-colors duration-200"
+            onClick={handleBack}
+          >
+            Back to Dashboard
+          </button>
+          {/* Title */}
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-center">
             Create New Auction
           </h1>
