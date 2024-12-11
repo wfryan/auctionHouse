@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import AuctionItemClickable from "@/app/components/AuctionItemClickable"
 import { useRouter } from 'next/navigation'
 import BuyerInfo from "../components/BuyerInfo"
@@ -14,11 +14,22 @@ export interface AuctionItem {
 }
 
 export default function Search() {
+
+    const [isMounted, setIsMounted] = useState(false);
+
     const router = useRouter()
     const [auctions, setAuctions] = useState<AuctionItem[]>([])
     const [dispError, setDispError] = useState(false)
     const input = useRef<HTMLInputElement>(null)
 
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    if (!isMounted) {
+        return null;
+    }
 
     const searchFunc = async () => {
         try {
@@ -53,29 +64,48 @@ export default function Search() {
 
 
     return (
-        <div>
-            {getToken() != null && <BuyerInfo />}
-            <br></br>
-            <LoginButton />
-            <SignOutButton />
-            <br></br><br></br><br></br>
-            <input placeholder="Search..." ref={input} id="srchbar" /><button onClick={() => searchFunc()}>Search Items</button>
-            {
-                auctions.map(item => {
-                    return (
-                        <div key={item.auction_item_id}>
-                            <div onClick={() => setStorage(item.auction_item_id)}>
-                                <AuctionItemClickable aucItem={item}></AuctionItemClickable>
-                            </div>
-                        </div>
+        <div className="min-h-screen py-8 px-4">
+            {/* Conditionally render BuyerInfo, LoginButton, and SignOutButton */}
+            {isMounted && getToken() != null && <BuyerInfo />}
+            <div className="mt-4">
+                {isMounted && <LoginButton />}
+                {isMounted && <SignOutButton />}
+            </div>
 
-                    )
-                })
-            }
-            {
-                dispError &&
-                <p>There was an error retrieving the auction items</p>
-            }
-        </div >
-    )
+            {/* Search bar section */}
+            <div className="mt-6 flex flex-col sm:flex-row items-center gap-4">
+                <input
+                    placeholder="Search for auction items..."
+                    ref={input}
+                    id="srchbar"
+                    className="px-4 py-2 rounded-md border border-gray-300 focus:ring-2 text-black focus:ring-blue-500 focus:outline-none w-full sm:w-80"
+                />
+                <button
+                    onClick={() => searchFunc()}
+                    className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                >
+                    Search Items
+                </button>
+            </div>
+
+            {/* Auctions section */}
+            <div className="mt-6 grid grid-cols-1 gap-6">
+                {auctions.map((item) => (
+                    <div key={item.auction_item_id} className="p-4 bg-white rounded-lg shadow-md w-30 hover:shadow-xl transition-shadow duration-300">
+                        <div onClick={() => setStorage(item.auction_item_id)}>
+                            <AuctionItemClickable aucItem={item} />
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Error message */}
+            {dispError && (
+                <p className="mt-4 text-red-600 font-semibold">
+                    There was an error retrieving the auction items.
+                </p>
+            )}
+        </div>
+    );
+
 }
