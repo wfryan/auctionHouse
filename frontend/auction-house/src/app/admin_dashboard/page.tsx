@@ -18,10 +18,11 @@ class Auction {
   item_information: string
   unfreeze_request_timestamp: string
   unfreeze_request_description: string
+  image_url?: string
 
 
 
-  constructor(aid: number, name: string, item_seller: string, starting_bid: number, start_time: string, end_time: string, info: string, urt: string, urd: string) {
+  constructor(aid: number, name: string, item_seller: string, starting_bid: number, start_time: string, end_time: string, info: string, urt: string, urd: string, image_url?: string) {
     this.auction_id = aid;
     this.item_name = name;
     this.item_seller = item_seller;
@@ -31,6 +32,7 @@ class Auction {
     this.item_information = info;
     this.unfreeze_request_timestamp = urt;
     this.unfreeze_request_description = urd;
+    this.image_url = image_url;
   }
 }
 
@@ -109,6 +111,7 @@ const AdminDashboard = () => {
         Object.keys(auctionData).forEach(key => {
           processedData[key] = auctionData[key].map((item: {
             auction_id: number,
+            item_picture: string,
             item_name: string,
             item_seller_id: number,
             item_seller: string,
@@ -120,6 +123,7 @@ const AdminDashboard = () => {
             unfreeze_request_description: string
           }) => ({
             auction_id: item.auction_id,
+            image_url: item.item_picture,
             item_name: item.item_name,
             item_seller: item.item_seller,
             item_starting_price: item.item_starting_price,
@@ -217,35 +221,35 @@ const AdminDashboard = () => {
       const responseBody = JSON.parse(response.data.body);
 
       console.log(responseBody)
-  
+
       // Check if the response is successful and contains data
       if (response.data.statusCode === 200 && responseBody.data && Array.isArray(responseBody.data)) {
         const auctionData = responseBody.data;
-        
+
         // Log the fetched data to verify its structure
         console.log("Fetched Data:", auctionData);
-  
+
         // Check if auctionData is valid and not empty
         if (!auctionData || auctionData.length === 0) {
           console.error("No data available to generate CSV");
           return;
         }
-  
+
         //The fields (columns) you want in the CSV
         const fields = [
           "auction_item_id", "item_name", "item_information", "item_picture", "auction_id", "starting_bid", "highest_bid", "status", "start_time",
           "end_time", "winner_id", "winning_bid_amount", "winner_username", "winner_location",
-          "seller_username", "seller_location", "seller_balance", "bid_id", "bid_amount", 
+          "seller_username", "seller_location", "seller_balance", "bid_id", "bid_amount",
           "bid_time", "bid_is_buy_now", "bidder_username", "bidder_location"
         ];
-  
+
         // Convert auction data to CSV
         const csv = parse(auctionData, { fields });
-  
+
         // Create a Blob object with CSV data
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
-  
+
         // Create a link element to trigger the download
         const link = document.createElement('a');
         link.href = url;
@@ -253,7 +257,7 @@ const AdminDashboard = () => {
         document.body.appendChild(link);
         link.click();  // Trigger the download
         document.body.removeChild(link);  // Clean up the link
-  
+
         alert("CSV file generated and download complete!");
       } else {
         console.error("Failed to fetch valid data for the CSV.");
@@ -281,6 +285,36 @@ const AdminDashboard = () => {
                   <span className="whitespace-nowrap">{"Item: " + item.item_name}</span>
                 </div>
                 {itemStatus == status.inactive && (
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => toggleViewForm(item.auction_id)}
+                      className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
+                    >
+                      View
+                    </button>
+                  </div>
+                )}
+                {itemStatus == status.completed && (
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => toggleViewForm(item.auction_id)}
+                      className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
+                    >
+                      View
+                    </button>
+                  </div>
+                )}
+                {itemStatus == status.failed && (
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => toggleViewForm(item.auction_id)}
+                      className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
+                    >
+                      View
+                    </button>
+                  </div>
+                )}
+                {itemStatus == status.archived && (
                   <div className="space-x-2">
                     <button
                       onClick={() => toggleViewForm(item.auction_id)}
@@ -351,6 +385,7 @@ const AdminDashboard = () => {
                     startTime={formatDateTime(item.item_start_time)} // Replace with actual data
                     endTime={formatDateTime(item.item_end_time)} // Replace with actual data
                     itemDescription={item.item_information}
+                    imageUrl={item.image_url}
                     onCancel={() => setViewingAuctionId(null)} // Close the form
 
                   />
@@ -380,7 +415,7 @@ const AdminDashboard = () => {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl md:text-3xl font-bold">Admin Dashboard</h1>
           <div className="flex space-x-4">
-            <button onClick = {generateForensicsCSV} className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black">
+            <button onClick={generateForensicsCSV} className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black">
               Generate Forensics
             </button>
             <SignOutButton />

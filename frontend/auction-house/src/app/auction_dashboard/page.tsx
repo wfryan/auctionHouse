@@ -7,6 +7,7 @@ import { decodeToken, getUsername } from '../utils/jwt';
 import SignOutButton from '../components/SignoutButton';
 import EditAuction from '../components/EditAuction';
 import RequestUnfreeze from '../components/RequestUnfreeze';
+import ViewAuction from '../components/ViewAuction';
 
 class Auction {
   auction_id: number
@@ -65,12 +66,18 @@ const AuctionDashboard = () => {
     frozen: []
   });
 
-  //State to track the auction being edited
+  //State to track the auctions current statuses
+
   const [editingAuctionId, setEditingAuctionId] = useState<number | null>(null);
+  const [viewingAuctionId, setViewingAuctionId] = useState<number | null>(null);
   const [frozenAuctionId, setFrozenAuctionId] = useState<number | null>(null);
 
   const toggleEditForm = (auctionId: number) => {
     setEditingAuctionId((current) => (current === auctionId ? null : auctionId));
+  };
+
+  const toggleViewForm = (auctionId: number) => {
+    setViewingAuctionId((current) => (current === auctionId ? null : auctionId));
   };
 
   const toggleFrozenForm = (auctionId: number) => {
@@ -277,35 +284,35 @@ const AuctionDashboard = () => {
 
       console.log(payload);
 
-      
+
       const response = await instance.post('auction/editAuctions', payload);
       let status = response.data.statusCode;
       let body = JSON.parse(response.data.body)
 
 
-      if (status === 200 && !response.data.imageAdded ) {
+      if (status === 200 && !response.data.imageAdded) {
         console.log("Auction Updated Successfully!");
         getAuctionInfo();
         alert("Auction Updated Succesfully!")
       } else if (status === 200 && response.data.imageAdded) {
-          let base64data = null;
+        let base64data = null;
 
-          if (editedAuction.image_file != null) {
-            base64data = await fileToBase64(editedAuction.image_file);
-          }
-          
-          const imageName = `${body.auction_item_id}${editedAuction.image_file?.name}`
-          const imageResponseBody = JSON.stringify({ fileContent: base64data, fileName: imageName /* send proper url to func */, fileType: editedAuction.image_file?.type }); //change off hardcoding
-          const imageResponse = await instance.post('/items/uploadImage', imageResponseBody);
-  
-          const uploadURLbody = JSON.stringify({ auctionItemId: body.auction_item_id, imageURL: imageResponse.data.body.fileUrl })
-          const uploadURLResponse = await instance.post('/items/updateImageURL', uploadURLbody);
+        if (editedAuction.image_file != null) {
+          base64data = await fileToBase64(editedAuction.image_file);
+        }
 
-          console.log("Auction Updated Successfully!");
-          getAuctionInfo();
-          alert("Auction Updated Succesfully!")
+        const imageName = `${body.auction_item_id}${editedAuction.image_file?.name}`
+        const imageResponseBody = JSON.stringify({ fileContent: base64data, fileName: imageName /* send proper url to func */, fileType: editedAuction.image_file?.type }); //change off hardcoding
+        const imageResponse = await instance.post('/items/uploadImage', imageResponseBody);
+
+        const uploadURLbody = JSON.stringify({ auctionItemId: body.auction_item_id, imageURL: imageResponse.data.body.fileUrl })
+        const uploadURLResponse = await instance.post('/items/updateImageURL', uploadURLbody);
+
+        console.log("Auction Updated Successfully!");
+        getAuctionInfo();
+        alert("Auction Updated Succesfully!")
       }
-      
+
       else {
         console.log("Failed to update auction.");
         alert("Auction could not be updated.");
@@ -364,6 +371,12 @@ const AuctionDashboard = () => {
                       Publish
                     </button>
                     <button
+                      onClick={() => toggleViewForm(item.auction_id)}
+                      className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
+                    >
+                      View
+                    </button>
+                    <button
                       onClick={() => toggleEditForm(item.auction_id)}
                       className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
                     >
@@ -377,6 +390,12 @@ const AuctionDashboard = () => {
                 {itemStatus === status.Active && (
                   <div className="space-x-2">
                     <button
+                      onClick={() => toggleViewForm(item.auction_id)}
+                      className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
+                    >
+                      View
+                    </button>
+                    <button
                       onClick={() => unpublishAuction(item.auction_id)}
                       className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
                     >
@@ -386,6 +405,12 @@ const AuctionDashboard = () => {
                 )}
                 {itemStatus === status.Frozen && (
                   <div className="space-x-2">
+                    <button
+                      onClick={() => toggleViewForm(item.auction_id)}
+                      className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
+                    >
+                      View
+                    </button>
                     <button
                       onClick={() => toggleFrozenForm(item.auction_id)}
                       className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
@@ -397,10 +422,26 @@ const AuctionDashboard = () => {
                 {itemStatus === status.Completed && (
                   <div className="space-x-2">
                     <button
+                      onClick={() => toggleViewForm(item.auction_id)}
+                      className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
+                    >
+                      View
+                    </button>
+                    <button
                       onClick={() => handleFulfill(item.auction_id)}
                       className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
                     >
                       Fulfill Item
+                    </button>
+                  </div>
+                )}
+                {itemStatus == status.Archived && (
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => toggleViewForm(item.auction_id)}
+                      className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
+                    >
+                      View
                     </button>
                   </div>
                 )}
@@ -430,10 +471,26 @@ const AuctionDashboard = () => {
                         updatedAuction.auctionType,
                         updatedAuction.image || undefined
                       );
-                      console.log(item.image_file,item.image_url);
+                      console.log(item.image_file, item.image_url);
 
                       handleEditSubmit(convertedAuction);
                     }}
+                  />
+                </div>
+              )}
+              {viewingAuctionId === item.auction_id && (
+                <div className="p-4 bg-black-50">
+                  <ViewAuction
+                    auctionId={item.auction_id}
+                    itemSeller={""}
+                    itemName={item.item_name}
+                    startingPrice={item.item_starting_price} // Replace with actual data
+                    startTime={formatDateTime(item.item_start_time)} // Replace with actual data
+                    endTime={formatDateTime(item.item_end_time)} // Replace with actual data
+                    itemDescription={item.item_information}
+                    imageUrl={item.image_url}
+                    onCancel={() => setViewingAuctionId(null)} // Close the form
+
                   />
                 </div>
               )}
