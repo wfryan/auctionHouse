@@ -41,7 +41,9 @@ function AuctionPage() {
     const [auction, setAuction] = useState<Auction | null>(null)
     const [bids, setBids] = useState<Bid[]>([])
     const [userData, setUserData] = useState({ balance: 0, user_id: 0 })
-    const [dispError, setDispError] = useState(false) //error unused atm
+    const [dispError, setDispError] = useState("")
+
+
 
 
 
@@ -65,16 +67,10 @@ function AuctionPage() {
                 id: localStorage.getItem("id"),
                 username: user
             }
-            const resp = await fetch("https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/items/viewItem", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(body)
-            })
-            const awaitRespJson = await resp.json()
-            const jsonItemResp = awaitRespJson.body.item
-            const jsonAuctionBids = awaitRespJson.body.bids
+            const response = await instance.post("items/viewItem", JSON.stringify(body))
+
+            const jsonItemResp = response.data.body.item
+            const jsonAuctionBids = response.data.body.bids
 
             console.log(jsonItemResp);
 
@@ -82,11 +78,11 @@ function AuctionPage() {
             console.log(auction)
             setBids(jsonAuctionBids)
 
-            setUserData(awaitRespJson.body.user)
+            setUserData(response.data.body.user)
             console.log("auction type")
             console.log(auction?.isBuyNow)
         } catch (error) {
-            setDispError(true)
+            setDispError("")
             console.log(error)
             console.log(dispError)
         }
@@ -134,30 +130,31 @@ function AuctionPage() {
             console.log(bids)
             if (bids.length == 0 && auction != null) {
                 if (bidValue == "" || parseInt(bidValue) < auction?.starting_bid) {
-                    alert("Bid value invalid")
+                    setDispError("Bid value invalid")
                     throw new Error("Bid value invalid")
                 }
             }
             else {
                 if (bidValue == "" || parseInt(bidValue) < bids[0].amount) {
-                    alert("Bid value invalid")
+                    setDispError("Bid value invalid")
                     throw new Error("Bid value invalid")
                 }
             }
-            const resp = await fetch("https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/auction/placeBid", {
-                method: "POST",
-                body: JSON.stringify({
-                    amount: parseInt(bidValue),
-                    auction_id: auction?.auction_id,
-                    buyer_id: userData.user_id,
-                    bidTime: formatTime()
-                })
+            setDispError("")
+            const body = JSON.stringify({
+                amount: parseInt(bidValue),
+                auction_id: auction?.auction_id,
+                buyer_id: userData.user_id,
+                bidTime: formatTime()
             })
-            const respJson = await resp.json()
-            console.log(respJson)
-            setAuction(respJson.body.item)
-            setBids(respJson.body.bids)
-            setUserData(respJson.body.user)
+            const response = await instance.post("/auction/placeBid", body)
+
+            setAuction(response.data.body.item)
+            setBids(response.data.body.bids)
+            setUserData(response.data.body.user)
+            if (response.data.status !== 200) {
+                setDispError(response.data.body.message)
+            }
         }
         catch (error) {
             console.log(error)
@@ -170,7 +167,8 @@ function AuctionPage() {
 
 
     return (
-        <div>
+
+        <div className="py-8 px-4">
             <div>
                 <LoginButton />
             </div>
@@ -180,50 +178,115 @@ function AuctionPage() {
             <div>
                 <BuyerInfo />
             </div>
-
-            <br></br><br></br>
             <button
                 onClick={handleSearchClick}
                 className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black"
             >
                 Search
             </button>
-            {auction == null &&
-                <div />
-            }
-            {(auction != null && auction?.end_time > formatTime() && auction?.status == "active") &&
-                <div>
-                    <p>auction id: {auction.auction_id}</p>
-                    <p>item name: {auction.item_name}</p>
-                    <p>information: {auction.information}</p>
-                    <p>item id: {localStorage.getItem("id")}</p>
-                    <p>seller id: {auction.seller_id}</p>
-                    <p>winner id: {auction.winner_id}</p>
-                    <p>starting bid: {auction.starting_bid}</p>
-                    <p>highest bid id: {auction.highest_bid}</p>
-                    <p>status: {auction.status}</p>
-                    <p>start time: {auction.start_time.toString()}</p>
-                    <p>end time: {auction.end_time.toString()}</p>
-                    <div id="buyNow" hidden={!auction.isBuyNow}>
-                        <button onClick={() => handleBuyNow()} className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black">Buy Now</button>
-                    </div>
-                    <img id="itemImg" src={auction.picture}></img>
-                    <div hidden={!!auction.isBuyNow}>
-                        {/**TODO: for onkeyup, make sure user cannot enter something less than highest bid*/}
-                        <input id="bidInput" placeholder="Enter a bid..." onKeyUp={() => { }} type="number" className="rounded-md w-32 [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-1 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-1 [&::-webkit-outer-spin-button]:appearance-none text-end"></input>
-                        <button onClick={() => placeBidFunction()} className="border border-gray-100">Place Bid</button>
-                    </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                    <div hidden={!!auction.isBuyNow}>
-                        <p>Bids</p>
-                        {bids.map((bid, index) => {
-                            return (
-                                <BidDisplay key={index} bid={bid}></BidDisplay> //easier to just give entire bid instead of fields separately
-                            )
-                        })}
-                    </div>
+                <div className="bg-gray-300 p-6 rounded-lg shadow-md">
+
+                    {auction == null &&
+                        <div />
+                    }
+                    {(auction != null &&
+                        <div className="bg-gray-100 rounded-lg shadow-lg max-w-lg mx-auto">
+                            <div className="m-4">
+                                <img
+                                    id="itemImg"
+                                    src={auction.picture}
+                                    alt="Auction Item"
+                                    className="w-full h-64 object-cover rounded-md shadow-md"
+                                />
+                            </div>
+                            <div className="space-y-2 m-4">
+                                <p className="text-lg font-semibold text-gray-800">Item Name: <span className="font-normal text-gray-600">{auction.item_name}</span></p>
+                                <p className="text-sm text-gray-800">Information: <span className="font-light text-gray-600">{auction.information}</span></p>
+                                <p className="text-sm text-gray-800">Seller ID: <span className="font-light text-gray-600">{auction.seller_id}</span></p>
+                                {/* <p className="text-sm text-gray-800">Winner ID: <span className="font-light text-gray-600">{auction.winner_id}</span></p> */}
+                                <p className="text-sm text-gray-800">Starting Bid: $<span className="font-light text-gray-600">{auction.starting_bid}</span></p>
+                                <p className="text-sm text-gray-800">Highest Bid ID: <span className="font-light text-gray-600">{auction.highest_bid}</span></p>
+                                <p className="text-sm text-gray-800">Status: <span className="font-light text-gray-600">{auction.status}</span></p>
+                                <p className="text-sm text-gray-800">Start Time: <span className="font-light text-gray-600">{auction.start_time.toString()}</span></p>
+                                <p className="text-sm text-gray-800">End Time: <span className="font-light text-gray-600">{auction.end_time.toString()}</span></p>
+                            </div>
+
+                        </div>
+                    )}
                 </div>
-            }
+                <div className="bg-gray-300 text-black p-6 rounded-lg shadow-md">
+                    {/* Buy Now Section */}
+                    {auction == null &&
+                        <div />
+                    }
+                    {auction != null && (
+                        <div>
+                            <div
+                                id="buyNow"
+                                hidden={!auction.isBuyNow}
+                                className="mt-6 flex flex-col items-center"
+
+                            >
+                                {/* Buy now needs to be tested*/}
+                                <button
+                                    onClick={handleBuyNow}
+                                    hidden={!auction.isBuyNow}
+                                    className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition"
+                                >
+                                    Buy Now
+                                </button>
+                            </div>
+
+                            <div hidden={auction != null && !!auction.isBuyNow} className="mt-4">
+                                <div className="flex items-center gap-4">
+                                    <input
+                                        id="bidInput"
+                                        placeholder="Enter a bid..."
+                                        onKeyUp={() => { }}
+                                        type="number"
+                                        className="rounded-md w-32 px-4 py-2 border border-gray-300 text-end focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        style={{
+                                            appearance: "textfield",
+                                        }}
+                                    />
+                                    <button
+                                        onClick={placeBidFunction}
+                                        className="px-4 py-2 bg-gray-200 border border-gray-300 rounded-md shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 transition"
+                                    >
+                                        Place Bid
+                                    </button>
+                                    {dispError && (
+                                        <p className="text-sm text-red-600">{dispError}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div hidden={auction != null && !!auction.isBuyNow} className="mt-6">
+                                <p className="font-semibold text-black mb-2">Bids</p>
+                                <div className="space-y-2">
+                                    {bids.map((bid) => (
+                                        <div
+                                            className="p-2 border border-gray-200 rounded-md shadow-sm bg-gray-50"
+                                            key={bid.bid_id}
+                                        >
+                                            <BidDisplay
+                                                bid={bid}
+                                            />
+                                        </div>
+
+                                    ))}
+                                </div>
+                            </div>
+                            =
+                        </div>)}
+
+                </div>
+
+
+            </div>
+
             {
                 (auction != null && auction?.end_time < formatTime() && auction?.status != "active") &&
                 <div>

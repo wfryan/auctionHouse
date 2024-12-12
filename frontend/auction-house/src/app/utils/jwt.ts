@@ -37,9 +37,13 @@ export const decodeToken = (token: string): DecodedToken | null => {
 export const getUsername = () => {
 
     const token = getToken();
+    console.log("token")
+    console.log(token)
     if (token) {
         const decodedToken = decodeToken(token);
         if (decodedToken) {
+            console.log("decodedToken")
+            console.log(decodedToken)
             return decodedToken.username;
         } else {
             return null;

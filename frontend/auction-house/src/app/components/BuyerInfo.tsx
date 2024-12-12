@@ -11,45 +11,85 @@ export default function BuyerInfo() {
      */
 
     const router = useRouter()
-    const [hidden, setHidden] = useState<boolean>();
+
+    const [mounted, setMounted] = useState(false);
+
+    const [hidden, setHidden] = useState<boolean | null>(null);
     const [user, setUser] = useState("")
 
-    const [userInfo, setUserInfo] = useState({ username: "", balance: 0 })
+    const [userInfo, setUserInfo] = useState({ username: "", balance: null })
     useEffect(() => {
+        setMounted(true);
         const tempUser = getUsername();
+        console.log("username:")
+        console.log(tempUser)
         if (tempUser != null || tempUser != undefined)
             setUser(tempUser)
-        if (getToken() != null) {
-            setHidden(true)
-        } else {
-            setHidden(false)
-        }
-        pullUserInfo()
     }, [])
 
-    const body = JSON.stringify({ username: user })
+    useEffect(() => {
+        if (user) {
+            pullUserInfo();
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if (mounted) {
+            if (getToken() != null) {
+                console.log("No here")
+                setHidden(true)
+            } else {
+                console.log("Here")
+                setHidden(false)
+            }
+        }
+    }, [mounted]);
 
     const pullUserInfo = async () => {
-        const resp = await instance.post('/users/viewUserFunds', body);
-        console.log(resp);
+        try {
+            const body = JSON.stringify({ username: user })
+            console.log("test body")
+            console.log(body)
 
-        const userData = resp.data.body.user;
-        setUserInfo(({
-            username: user,
-            balance: userData.balance
-        }));
-        console.log(userInfo)
+            const resp = await instance.post('/users/viewUserFunds', body);
+            console.log(resp);
+
+            const userData = resp.data.body.user;
+            setUserInfo(({
+                username: user,
+                balance: userData.balance
+            }));
+            console.log(userInfo)
+        } catch {
+            console.log("failure")
+        }
+
     }
 
     const handleProfile = () => {
         router.push("/buyer_dashboard")
     }
 
-    return (
-        <div hidden={hidden}>
-            <button onClick={handleProfile}>{userInfo.username}</button>
-            <StatDisplay bal={userInfo.balance}></StatDisplay>
-        </div>
+    // Prevent rendering until mounted to avoid hydration issues
 
-    )
+    return (
+        <div >
+            {/* Ensures that dollar sign doesnt appear before money value*/}
+            {mounted && userInfo.balance !== null && (
+                <button onClick={handleProfile} className="cursor-pointer">
+                    <div>
+                        {/* The main content is shown when 'hidden' is true */}
+                        <label className="cursor-pointer">Hello, {userInfo.username}</label>
+                        <br></br>
+                        <label className="cursor-pointer">${userInfo.balance}</label>
+                    </div>
+                </button>
+            )}
+            {!mounted && (
+                <div>
+
+                </div>
+            )}
+        </div>
+    );
 }
