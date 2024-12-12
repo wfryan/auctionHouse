@@ -8,6 +8,7 @@ interface ViewAuctionFormProps {
   startTime: string;
   endTime: string;
   itemDescription?: string;
+  imageUrl?: string
 
   onCancel: () => void;
 
@@ -20,6 +21,7 @@ const ViewAuction: React.FC<ViewAuctionFormProps> = ({
   startTime,
   endTime,
   itemDescription = '',
+  imageUrl,
   onCancel,
 }) => {
   const [updatedItemName, setUpdatedItemName] = useState(itemName);
@@ -27,6 +29,7 @@ const ViewAuction: React.FC<ViewAuctionFormProps> = ({
   const [updatedStartTime, setUpdatedStartTime] = useState(startTime);
   const [updatedEndTime, setUpdatedEndTime] = useState(endTime);
   const [updatedExtraInfo, setUpdatedExtraInfo] = useState(itemDescription);
+  const [previewImage, setPreviewImage] = useState<string | null>(imageUrl || null);
 
   useEffect(() => {
     setUpdatedItemName(itemName)
@@ -87,6 +90,13 @@ const ViewAuction: React.FC<ViewAuctionFormProps> = ({
             {updatedExtraInfo}
           </div>
         </div>
+        {previewImage && (
+          <img
+            src={previewImage}
+            alt="Preview"
+            className="w-32 h-32 object-contain mt-2"
+          />
+        )}
         <div className="flex space-x-4">
           <button
             type="button"
