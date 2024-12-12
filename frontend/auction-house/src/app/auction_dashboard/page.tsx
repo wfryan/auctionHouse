@@ -352,6 +352,27 @@ const AuctionDashboard = () => {
     }
   };
 
+  const removeItem = async (auction_id: number) => {
+    console.log(getToken())
+    const resp = await fetch("https://9cf5it1p4d.execute-api.us-east-2.amazonaws.com/auctionHouse/auction/removeItem", {
+      method: "POST",
+      body: JSON.stringify({
+        username: user,
+        auction_id: auction_id,
+        token: `Bearer ${getToken()}`
+      })
+    })
+    const respJson = await resp.json()
+    console.log(respJson)
+    await getAuctionInfo() //need to call again due to another auction perhaps changing in meantime
+    if(respJson.statusCode == 200){
+      alert("Update successful")
+    }
+    else{
+      alert(respJson.message)
+    }
+  }
+
   // Component for individual auction table
   const AuctionTable: React.FC<AuctionTableProps> = ({ title, items, itemStatus }) => (
     <div className="mb-6">
@@ -382,7 +403,7 @@ const AuctionDashboard = () => {
                     >
                       Edit
                     </button>
-                    <button className="px-3 py-1 text-sm border border-black rounded hover:bg-red-500 hover:text-white hover:border-red-500">
+                    <button onClick = {() => removeItem(item.auction_id)} className="px-3 py-1 text-sm border border-black rounded hover:bg-red-500 hover:text-white hover:border-red-500">
                       Remove
                     </button>
                   </div>
