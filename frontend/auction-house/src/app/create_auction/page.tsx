@@ -24,9 +24,14 @@ const CreateAuctionForm = () => {
   const [imagePreview, setImagePreview] = useState<string>('');
   const [priceError, setPriceError] = useState<string>('');
 
+  const [dateErrorStart, setDateErrorStart] = useState<string>('');
+  const [dateErrorEnd, setDateErrorEnd] = useState<string>('');
+
   //Input Handler for Price
   const handleInputChange = (e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement> | ChangeEvent<HTMLSelectElement>) => {
     console.log(formData.startTime)
+    setDateErrorStart('');
+    setDateErrorEnd('');
     const { name, value } = e.target;
     if (name === 'startingPrice') {
       const rawValue = value.replace(/[$\s]/g, '');
@@ -106,6 +111,21 @@ const CreateAuctionForm = () => {
     e.preventDefault();
     if (priceError) {
       alert('Please fix the errors before submitting');
+      return;
+    }
+
+    if (new Date(formData.startTime) < new Date()) {
+      setDateErrorStart("Date is too early");
+      return;
+    }
+
+    if (new Date(formData.endTime) < new Date()) {
+      setDateErrorEnd("Date is too early");
+      return;
+    }
+
+    if (new Date(formData.startTime) > new Date(formData.endTime)) {
+      setDateErrorEnd("Date is before start time");
       return;
     }
 
@@ -239,6 +259,11 @@ const CreateAuctionForm = () => {
                   onChange={handleInputChange}
                 />
               </div>
+              {dateErrorStart && (
+                <div className="text-red-500 text-sm mt-1">
+                  {dateErrorStart}
+                </div>
+              )}
 
               {/* End Time Field */}
               <div>
@@ -254,6 +279,11 @@ const CreateAuctionForm = () => {
                   onChange={handleInputChange}
                 />
               </div>
+              {dateErrorEnd && (
+                <div className="text-red-500 text-sm mt-1">
+                  {dateErrorEnd}
+                </div>
+              )}
             </div>
 
             {/* Extra Info */}

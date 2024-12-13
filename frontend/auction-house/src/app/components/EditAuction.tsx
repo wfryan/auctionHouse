@@ -40,7 +40,9 @@ const EditAuction: React.FC<EditAuctionFormProps> = ({
   const [updatedItemName, setUpdatedItemName] = useState(itemName);
   const [updatedStartingPrice, setUpdatedStartingPrice] = useState(startingPrice);
   const [updatedStartTime, setUpdatedStartTime] = useState(startTime);
+  const [dateErrorStart, setDateErrorStart] = useState<string>('');
   const [updatedEndTime, setUpdatedEndTime] = useState(endTime);
+  const [dateErrorEnd, setDateErrorEnd] = useState<string>('');
   const [updatedExtraInfo, setUpdatedExtraInfo] = useState(itemDescription);
   const [updatedAuctionType, setUpdatedAuctionType] = useState(auctionType);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -66,6 +68,23 @@ const EditAuction: React.FC<EditAuctionFormProps> = ({
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (priceError) return;
+
+    if (new Date(updatedStartTime) < new Date()) {
+      setDateErrorStart("Date is too early");
+      return;
+    }
+
+    if (new Date(updatedEndTime) < new Date()) {
+      setDateErrorEnd("Date is too early");
+      return;
+    }
+
+    if (new Date(updatedStartTime) > new Date(updatedEndTime)) {
+      setDateErrorEnd("Date is before start time");
+      return;
+    }
+
+
 
     onSubmit({
       auctionId,
@@ -123,7 +142,6 @@ const EditAuction: React.FC<EditAuctionFormProps> = ({
             value={updatedItemName}
             onChange={(e) => setUpdatedItemName(e.target.value)}
             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm text-black"
-            required
           />
         </div>
         <div className="mb-4">
@@ -137,7 +155,6 @@ const EditAuction: React.FC<EditAuctionFormProps> = ({
               onChange={handlePriceChange}
               className={`mt-1 block w-full p-2 border ${priceError ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm text-black`}
               inputMode="numeric"
-              required
             />
             {priceError && (
               <div className="text-red-500 text-sm mt-1">
@@ -153,10 +170,14 @@ const EditAuction: React.FC<EditAuctionFormProps> = ({
           <input
             type="datetime-local"
             value={updatedStartTime}
-            onChange={(e) => setUpdatedStartTime(e.target.value)}
+            onChange={(e) => { setUpdatedStartTime(e.target.value); setDateErrorStart(''); }}
             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm text-black"
-            required
           />
+          {dateErrorStart && (
+            <div className="text-red-500 text-sm mt-1">
+              {dateErrorStart}
+            </div>
+          )}
         </div>
         <div className="mb-4">
           <label className="block text-sm font-medium text-black">
@@ -165,10 +186,14 @@ const EditAuction: React.FC<EditAuctionFormProps> = ({
           <input
             type="datetime-local"
             value={updatedEndTime}
-            onChange={(e) => setUpdatedEndTime(e.target.value)}
+            onChange={(e) => { setUpdatedEndTime(e.target.value); setDateErrorEnd(''); }}
             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm text-black"
-            required
           />
+          {dateErrorEnd && (
+            <div className="text-red-500 text-sm mt-1">
+              {dateErrorEnd}
+            </div>
+          )}
         </div>
         <div className="mb-4">
           <label className="block text-sm font-medium text-black">
