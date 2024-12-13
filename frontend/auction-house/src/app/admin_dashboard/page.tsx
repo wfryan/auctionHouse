@@ -7,6 +7,7 @@ import SignOutButton from '../components/SignoutButton';
 import ViewAuction from '../components/ViewAuction';
 import ViewRequestUnfreeze from '../components/ViewRequestUnfreeze';
 import { parse } from 'json2csv';
+import AuctionReport, {AuctionData} from '../components/AuctionReport'
 
 class Auction {
   auction_id: number
@@ -70,6 +71,9 @@ const AdminDashboard = () => {
   //State to track the auction being edited
   const [viewingAuctionId, setViewingAuctionId] = useState<number | null>(null);
   const [frozenAuctionId, setFrozenAuctionId] = useState<number | null>(null);
+  const [reportData, setReportData] = useState<AuctionData[] | null>(null);
+  const [showReport, setShowReport] = useState(false);
+  const [loadingReport, setLoadingReport] = useState(false);
 
   const toggleViewForm = (auctionId: number) => {
     setViewingAuctionId((current) => (current === auctionId ? null : auctionId));
@@ -267,6 +271,50 @@ const AdminDashboard = () => {
     }
   };
 
+  const generateReport = async () => {
+    setLoadingReport(true);
+    try {
+      const response = await instance.post('/admin/getReport', JSON.stringify({
+        token: `${getToken()}`,
+      }));
+
+      // Parse the response body since it's a string
+      const responseBody = JSON.parse(response.data.body);
+
+      console.log(responseBody)
+
+      if (response.data.statusCode === 200) {
+        const parsedData = responseBody.data
+
+        // Transform backend data to AuctionData[]
+        const transformedData: AuctionData[] = responseBody.data.map((item: {
+          item_name: string;
+          sold_price: number;
+          buyer_username: string;
+        }) => ({
+          itemName: item.item_name,
+          soldPrice: item.sold_price,
+          buyerUsername: item.buyer_username
+        }))
+
+        setReportData(transformedData); // Assuming the response contains auction report data in `data`
+        setShowReport(true);
+      } else {
+        alert('Failed to fetch report data.');
+      }
+    } catch (error) {
+      console.error('Error fetching report:', error);
+      alert('There was an error fetching the report. Please try again.');
+    } finally {
+      setLoadingReport(false);
+    }
+  };
+
+  useEffect(() => {
+    // Fetch initial auction data here
+    getAuctionInfo();
+  }, []);
+
   // Component for individual auction table
   const AuctionTable: React.FC<AuctionTableProps> = ({ title, items, itemStatus }) => (
 
@@ -415,6 +463,9 @@ const AdminDashboard = () => {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl md:text-3xl font-bold">Admin Dashboard</h1>
           <div className="flex space-x-4">
+            <button onClick={generateReport} disabled={loadingReport} className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black">
+              {loadingReport ? 'Generating...' : 'Generate Report'}
+            </button>
             <button onClick={generateForensicsCSV} className="px-4 py-2 bg-white border-2 border-black rounded-md hover:bg-blue-50 text-black">
               Generate Forensics
             </button>
@@ -422,6 +473,12 @@ const AdminDashboard = () => {
           </div>
         </div>
         <div className="space-y-6">
+          {/* Render AuctionReport below the tables if data is available */}
+          {showReport && reportData && (
+            <div className="mt-6">
+              <AuctionReport data={reportData} onClose ={() => setShowReport(false)} />
+            </div>
+          )}
           <AuctionTable title="FROZEN" items={auctionData.frozen} itemStatus={status.frozen} />
           <AuctionTable title="ACTIVE" items={auctionData.active} itemStatus={status.active} />
           <AuctionTable title="UNLISTED" items={auctionData.unlisted} itemStatus={status.inactive} />
