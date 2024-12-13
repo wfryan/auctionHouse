@@ -108,14 +108,17 @@ const AuctionDashboard = () => {
 
   const publishAuction = async (auction_id: number) => {
     setEditingAuctionId(null);
+    let currentAuction = auctionData.unlisted.filter(auction => auction.auction_id == auction_id)[0]
+    if (currentAuction.item_starting_price == 0 || currentAuction.item_end_time == null || currentAuction.image_url == null) {
+      alert("Not enough information to publish")
+      return;
+    }
     const now = formatTime()
     const payload = JSON.stringify({
       auctionId: auction_id,
       now: now,
       token: `Bearer ${getToken()}`
     });
-
-    console.log(auction_id)
     try {
       const response = await instance.post('/auction/publish', payload);
       const status = response.data.statusCode;
@@ -308,6 +311,7 @@ const AuctionDashboard = () => {
         console.log("Auction Updated Successfully!");
         getAuctionInfo();
         alert("Auction Updated Succesfully!")
+        setEditingAuctionId(null)
       } else if (status === 200 && response.data.imageAdded) {
         let base64data = null;
 
@@ -325,6 +329,7 @@ const AuctionDashboard = () => {
         console.log("Auction Updated Successfully!");
         getAuctionInfo();
         alert("Auction Updated Succesfully!")
+        setEditingAuctionId(null)
       }
 
       else {
@@ -379,10 +384,10 @@ const AuctionDashboard = () => {
     const respJson = await resp.json()
     console.log(respJson)
     await getAuctionInfo() //need to call again due to another auction perhaps changing in meantime
-    if(respJson.statusCode == 200){
+    if (respJson.statusCode == 200) {
       alert("Update successful")
     }
-    else{
+    else {
       alert(respJson.message)
     }
   }
@@ -417,7 +422,7 @@ const AuctionDashboard = () => {
                     >
                       Edit
                     </button>
-                    <button onClick = {() => removeItem(item.auction_id)} className="px-3 py-1 text-sm border border-black rounded hover:bg-red-500 hover:text-white hover:border-red-500">
+                    <button onClick={() => removeItem(item.auction_id)} className="px-3 py-1 text-sm border border-black rounded hover:bg-red-500 hover:text-white hover:border-red-500">
                       Remove
                     </button>
                   </div>
@@ -507,7 +512,6 @@ const AuctionDashboard = () => {
                         updatedAuction.image || undefined
                       );
                       console.log(item.image_file, item.image_url);
-
                       handleEditSubmit(convertedAuction);
                     }}
                   />
