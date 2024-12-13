@@ -12,7 +12,17 @@ export default function AuctionItemClickable({ aucItem }: { aucItem: AuctionItem
                 }
 
                 <p className="text-black">item name: {aucItem.item_name}</p>
-                <p className="text-black">current price: ${aucItem.amount}</p>
+                {aucItem.amount != null &&
+                    <div>
+                        <p className="text-black">current price: ${aucItem.amount}</p>
+                    </div>
+                }
+                {aucItem.amount == null &&
+                    <div>
+                        <p className="text-black">current price: ${aucItem.starting_bid}</p>
+                    </div>
+                }
+
                 <p className="text-black ">item info: {aucItem.information}</p>
             </div>
             {aucItem.picture && (

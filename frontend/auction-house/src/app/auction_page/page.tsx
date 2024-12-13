@@ -38,12 +38,19 @@ function AuctionPage() {
 
     const user = getUsername()
 
+    const [isMounted, setIsMounted] = useState(false);
+
     const [auction, setAuction] = useState<Auction | null>(null)
     const [bids, setBids] = useState<Bid[]>([])
     const [userData, setUserData] = useState({ balance: 0, user_id: 0 })
     const [dispError, setDispError] = useState("")
+    const [bidValue, setBidValue] = useState<string>("")
+    const [editableBidValue, setEditableBidValue] = useState<boolean>(true)
+    const [highestBid, setHighestBid] = useState<string>("")
 
-
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
 
 
@@ -93,6 +100,20 @@ function AuctionPage() {
         console.log(userData)
     }, [auction?.picture])
 
+    useEffect(() => {
+        console.log("bids")
+        console.log(bids)
+        if (bids != undefined && bids.length > 0) {
+            setHighestBid("$" + (bids[0].amount))
+            setEditableBidValue(true)
+        } else {
+            setHighestBid("n/a")
+            setBidValue("" + auction?.starting_bid)
+            setEditableBidValue(false)
+        }
+
+    }, [bids])
+
     /**TODO: ?: page should refresh every 30 seconds or so correct? to refresh bids. */
 
     const handleBuyNow = async () => {
@@ -122,27 +143,30 @@ function AuctionPage() {
 
     const placeBidFunction = async () => {
         console.log(userData.user_id)
-        const bidValue = (document.getElementById("bidInput") as HTMLInputElement).value
-        console.log(parseInt(bidValue))
         console.log(auction?.auction_id)
         console.log(formatTime())
+
         try {
             console.log(bids)
-            if (bids.length == 0 && auction != null) {
+            if (bidValue != undefined && bids.length == 0 && auction != null) {
                 if (bidValue == "" || parseInt(bidValue) < auction?.starting_bid) {
                     setDispError("Bid value invalid")
                     throw new Error("Bid value invalid")
                 }
             }
             else {
-                if (bidValue == "" || parseInt(bidValue) < bids[0].amount) {
+                if (bidValue != undefined && (bidValue == "" || parseInt(bidValue) < bids[0].amount)) {
                     setDispError("Bid value invalid")
                     throw new Error("Bid value invalid")
                 }
             }
             setDispError("")
+            let parsedBidValue
+            if (bidValue != null) {
+                parsedBidValue = parseInt(bidValue)
+            }
             const body = JSON.stringify({
-                amount: parseInt(bidValue),
+                amount: parsedBidValue,
                 auction_id: auction?.auction_id,
                 buyer_id: userData.user_id,
                 bidTime: formatTime()
@@ -207,7 +231,7 @@ function AuctionPage() {
                                 <p className="text-sm text-gray-800">Seller ID: <span className="font-light text-gray-600">{auction.seller_id}</span></p>
                                 {/* <p className="text-sm text-gray-800">Winner ID: <span className="font-light text-gray-600">{auction.winner_id}</span></p> */}
                                 <p className="text-sm text-gray-800">Starting Bid: $<span className="font-light text-gray-600">{auction.starting_bid}</span></p>
-                                <p className="text-sm text-gray-800">Highest Bid ID: <span className="font-light text-gray-600">{auction.highest_bid}</span></p>
+                                <p className="text-sm text-gray-800">Highest Bid: <span className="font-light text-gray-600">{highestBid}</span></p>
                                 <p className="text-sm text-gray-800">Status: <span className="font-light text-gray-600">{auction.status}</span></p>
                                 <p className="text-sm text-gray-800">Start Time: <span className="font-light text-gray-600">{auction.start_time.toString()}</span></p>
                                 <p className="text-sm text-gray-800">End Time: <span className="font-light text-gray-600">{auction.end_time.toString()}</span></p>
@@ -216,7 +240,7 @@ function AuctionPage() {
                         </div>
                     )}
                 </div>
-                <div className="bg-gray-300 text-black p-6 rounded-lg shadow-md">
+                {(isMounted && getUsername() != null && <div className="bg-gray-300 text-black p-6 rounded-lg shadow-md">
                     {/* Buy Now Section */}
                     {auction == null &&
                         <div />
@@ -241,10 +265,13 @@ function AuctionPage() {
 
                             <div hidden={auction != null && !!auction.isBuyNow} className="mt-4">
                                 <div className="flex items-center gap-4">
+
                                     <input
                                         id="bidInput"
+                                        value={bidValue}
                                         placeholder="Enter a bid..."
-                                        onKeyUp={() => { }}
+                                        onChange={(e) => setBidValue(e.target.value)}
+                                        disabled={!editableBidValue}
                                         type="number"
                                         className="rounded-md w-32 px-4 py-2 border border-gray-300 text-end focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         style={{
@@ -279,10 +306,9 @@ function AuctionPage() {
                                     ))}
                                 </div>
                             </div>
-                            =
                         </div>)}
 
-                </div>
+                </div>)}
 
 
             </div>
