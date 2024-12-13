@@ -160,15 +160,16 @@ const BuyerDashboard = () => {
                     <label hidden={item.auction_status === "archived"}> Item has been purchased and awaiting fulfillment! </label>
                   </div>
                 )}
-                <div className="space-x-2">
-                  <button
-                    onClick={() => viewItem(item.item_id)}
-                    className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
-                  >
-                    View
-                  </button>
-                </div>
-
+                {(status == bidStatus.trailing || status == bidStatus.winning) && 
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => viewItem(item.item_id)}
+                      className="px-3 py-1 text-sm border border-black rounded hover:bg-blue-300 hover:text-white hover:border-blue-300"
+                    >
+                      View
+                    </button>
+                  </div>
+                }
               </div>
             </div>
 

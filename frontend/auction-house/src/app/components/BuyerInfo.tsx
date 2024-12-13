@@ -17,7 +17,7 @@ export default function BuyerInfo() {
     const [hidden, setHidden] = useState<boolean | null>(null);
     const [user, setUser] = useState("")
 
-    const [userInfo, setUserInfo] = useState({ username: "", balance: null })
+    const [userInfo, setUserInfo] = useState({ username: "", balance: null, tmpUsedFunds: 0 })
     useEffect(() => {
         setMounted(true);
         const tempUser = getUsername();
@@ -57,7 +57,8 @@ export default function BuyerInfo() {
             const userData = resp.data.body.user;
             setUserInfo(({
                 username: user,
-                balance: userData.balance
+                balance: userData.balance,
+                tmpUsedFunds: userData.tmpUsedFunds
             }));
             console.log(userInfo)
         } catch {
@@ -81,7 +82,7 @@ export default function BuyerInfo() {
                         {/* The main content is shown when 'hidden' is true */}
                         <label className="cursor-pointer">Hello, {userInfo.username}</label>
                         <br></br>
-                        <label className="cursor-pointer">${userInfo.balance}</label>
+                        <label className="cursor-pointer">${userInfo.balance} (Usable Funds: ${userInfo.tmpUsedFunds})</label>
                     </div>
                 </button>
             )}
