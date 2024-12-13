@@ -13,6 +13,7 @@ export interface AuctionItem {
   item_name: string;
   status: string;
   information: string;
+  starting_bid: string;
   amount: number;
   end_time: string;
   start_time: string;
