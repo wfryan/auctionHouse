@@ -16,6 +16,19 @@ Username: buyer
 Password: password
 
 ---------------------
+## Iteration 3 Use Cases
+
+- Review Purchases
+- Sort Items (Customer)
+- Sort Items (Buyer)
+- Search
+- Search Recently Sold
+- Remove Inactive Items
+- Archive
+- Auction Report
+- Forensics Report
+
+---------------------
 ## Iteration 2 Use Cases
 
 - Buyer Add Funds

@@ -7,7 +7,7 @@ import SignOutButton from '../components/SignoutButton';
 import ViewAuction from '../components/ViewAuction';
 import ViewRequestUnfreeze from '../components/ViewRequestUnfreeze';
 import { parse } from 'json2csv';
-import AuctionReport, {AuctionData} from '../components/AuctionReport'
+import AuctionReport, { AuctionData } from '../components/AuctionReport'
 
 class Auction {
   auction_id: number
@@ -284,7 +284,6 @@ const AdminDashboard = () => {
       console.log(responseBody)
 
       if (response.data.statusCode === 200) {
-        const parsedData = responseBody.data
 
         // Transform backend data to AuctionData[]
         const transformedData: AuctionData[] = responseBody.data.map((item: {
@@ -476,7 +475,7 @@ const AdminDashboard = () => {
           {/* Render AuctionReport below the tables if data is available */}
           {showReport && reportData && (
             <div className="mt-6">
-              <AuctionReport data={reportData} onClose ={() => setShowReport(false)} />
+              <AuctionReport data={reportData} onClose={() => setShowReport(false)} />
             </div>
           )}
           <AuctionTable title="FROZEN" items={auctionData.frozen} itemStatus={status.frozen} />

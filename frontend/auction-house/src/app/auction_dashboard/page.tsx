@@ -108,7 +108,7 @@ const AuctionDashboard = () => {
 
   const publishAuction = async (auction_id: number) => {
     setEditingAuctionId(null);
-    let currentAuction = auctionData.unlisted.filter(auction => auction.auction_id == auction_id)[0]
+    const currentAuction = auctionData.unlisted.filter(auction => auction.auction_id == auction_id)[0]
     if (currentAuction.item_starting_price == 0 || currentAuction.item_end_time == null || currentAuction.image_url == null) {
       alert("Not enough information to publish")
       return;
@@ -192,7 +192,7 @@ const AuctionDashboard = () => {
   };
 
   const getAuctionInfo = async () => {
-    let tkn = getToken();
+    const tkn = getToken();
     if (tkn !== null) {
       console.log(decodeToken(tkn))
     }
@@ -303,8 +303,8 @@ const AuctionDashboard = () => {
 
 
       const response = await instance.post('auction/editAuctions', payload);
-      let status = response.data.statusCode;
-      let body = JSON.parse(response.data.body)
+      const status = response.data.statusCode;
+      const body = JSON.parse(response.data.body)
 
 
       if (status === 200 && !response.data.imageAdded) {
@@ -324,7 +324,7 @@ const AuctionDashboard = () => {
         const imageResponse = await instance.post('/items/uploadImage', imageResponseBody);
 
         const uploadURLbody = JSON.stringify({ auctionItemId: body.auction_item_id, imageURL: imageResponse.data.body.fileUrl })
-        const uploadURLResponse = await instance.post('/items/updateImageURL', uploadURLbody);
+        await instance.post('/items/updateImageURL', uploadURLbody);
 
         console.log("Auction Updated Successfully!");
         getAuctionInfo();

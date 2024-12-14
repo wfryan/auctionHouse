@@ -259,11 +259,10 @@ function AuctionPage() {
                         <div>
                             <div
                                 id="buyNow"
-                                hidden={!auction.isBuyNow}
+                                hidden={auction.status != 'active' || !auction.isBuyNow}
                                 className="mt-6 flex flex-col items-center"
 
                             >
-                                {/* Buy now needs to be tested*/}
                                 <button
                                     onClick={handleBuyNow}
                                     hidden={!auction.isBuyNow}
@@ -281,6 +280,7 @@ function AuctionPage() {
                                         value={bidValue}
                                         placeholder="Enter a bid..."
                                         onChange={(e) => setBidValue(e.target.value)}
+                                        hidden={auction.status != 'active'}
                                         disabled={!editableBidValue}
                                         type="number"
                                         className="rounded-md w-32 px-4 py-2 border border-gray-300 text-end focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -290,6 +290,7 @@ function AuctionPage() {
                                     />
                                     <button
                                         onClick={placeBidFunction}
+                                        hidden={auction.status != 'active'}
                                         className="px-4 py-2 bg-gray-200 border border-gray-300 rounded-md shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 transition"
                                     >
                                         Place Bid

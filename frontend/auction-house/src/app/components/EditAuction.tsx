@@ -51,6 +51,7 @@ const EditAuction: React.FC<EditAuctionFormProps> = ({
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    console.log(image)
     if (file) {
       // Set the selected file
       setSelectedImage(file);

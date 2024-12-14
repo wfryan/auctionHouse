@@ -2,7 +2,6 @@ import { useRouter } from 'next/navigation';
 import { instance } from '../utils/auctionHouseApi';
 import { getUsername } from '../utils/jwt';
 import { useEffect, useState } from 'react';
-import StatDisplay from './StatDisplay';
 import { getToken } from '../utils/cookie';
 export default function BuyerInfo() {
 
@@ -37,6 +36,7 @@ export default function BuyerInfo() {
         if (mounted) {
             if (getToken() != null) {
                 console.log("No here")
+                console.log(hidden)
                 setHidden(true)
             } else {
                 console.log("Here")

@@ -29,7 +29,7 @@ const ViewAuction: React.FC<ViewAuctionFormProps> = ({
   const [updatedStartTime, setUpdatedStartTime] = useState(startTime);
   const [updatedEndTime, setUpdatedEndTime] = useState(endTime);
   const [updatedExtraInfo, setUpdatedExtraInfo] = useState(itemDescription);
-  const [previewImage, setPreviewImage] = useState<string | null>(imageUrl || null);
+  const [previewImage] = useState<string | null>(imageUrl || null);
 
   useEffect(() => {
     setUpdatedItemName(itemName)
