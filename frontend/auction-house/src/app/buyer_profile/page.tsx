@@ -30,7 +30,7 @@ export default function BuyerProfile() {
   }
 
   function checkAddition() {
-    if (1 > parseInt((document.getElementById("addInput") as HTMLInputElement).value)) {
+    if (1 > parseInt((document.getElementById("addInput") as HTMLInputElement).value) || (document.getElementById("addInput") as HTMLInputElement).value == "") {
       (document.getElementById("addInput") as HTMLInputElement).value = "1"
     }
     else if (parseInt((document.getElementById("addInput") as HTMLInputElement).value) > 999999999999) {

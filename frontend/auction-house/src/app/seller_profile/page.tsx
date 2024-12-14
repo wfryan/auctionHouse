@@ -11,6 +11,7 @@ const SellerProfile = () => {
   const [error, setError] = useState("");
   const [username, setUsername] = useState("")
   const [userInfo, setUserInfo] = useState({ user_id: 0, description: "", location: "", age: 0 });
+  const [balance, setBalance] = useState(0)
   useEffect(() => {
     if (user != null) {
       setUsername(user)
@@ -37,6 +38,7 @@ const SellerProfile = () => {
     const jsonResp = await resp.json()
     console.log(jsonResp.body)
     setUserInfo(jsonResp.body.user)
+    setBalance(jsonResp.body.user.balance)
   }
 
   const closeAccount = async () => {
@@ -92,6 +94,10 @@ const SellerProfile = () => {
 
             <div className="bg-gray-100 p-3 rounded-md min-h-16 text-black">
               {"Description: " + userInfo.description}
+            </div>
+
+            <div className="flex justify-between bg-gray-100 p-3 rounded-md text-black">
+              {`Balance: $${balance}`}
             </div>
 
             {/* <div className="bg-gray-100 p-3 rounded-md text-black">
