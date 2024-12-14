@@ -52,7 +52,17 @@ function AuctionPage() {
         setIsMounted(true);
     }, []);
 
+    // New useEffect for periodic data refresh
+    useEffect(() => {
+        // Only start the interval if there's an auction
+        if (auction) {
+            // Set up an interval to fetch data every 30 seconds
+            const intervalId = setInterval(fetchData, 30000);
 
+            // Clean up the interval when the component unmounts or the auction changes
+            return () => clearInterval(intervalId);
+        }
+    }, [auction]);
 
 
     const formatTime = () => {

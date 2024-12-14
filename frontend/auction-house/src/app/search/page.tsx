@@ -34,6 +34,18 @@ export default function Search() {
     setIsMounted(true);
   }, []);
 
+  // New useEffect for periodic data refresh
+  useEffect(() => {
+    // Only start the interval if there's an auction
+    if (auctions) {
+        // Set up an interval to fetch data every 30 seconds
+        const intervalId = setInterval(searchFunc, 30000);
+
+        // Clean up the interval when the component unmounts or the auction changes
+        return () => clearInterval(intervalId);
+    }
+    }, [auctions]);
+
   const searchFunc = async () => {
     setIsButtonDisabled(true);
     try {
